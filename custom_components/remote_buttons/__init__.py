@@ -36,9 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: RemoteButtonsConfigEntry
     }
 
     # Forward to button and number platforms (stores async_add_entities callbacks).
-    await hass.config_entries.async_forward_entry_setups(
-        entry, [Platform.BUTTON, Platform.NUMBER]
-    )
+    await hass.config_entries.async_forward_entry_setups(entry, [Platform.BUTTON, Platform.NUMBER])
 
     # Initial scan of all watched remotes' storage.
     await async_scan_remote_commands(hass, entry)
@@ -225,9 +223,7 @@ def _handle_removed_remote(
 
     # Remove this remote from the watched list.
     watched.remove(entity_id)
-    hass.config_entries.async_update_entry(
-        entry, data={**entry.data, "remote_entities": watched}
-    )
+    hass.config_entries.async_update_entry(entry, data={**entry.data, "remote_entities": watched})
 
     # Dismiss any repair issue for this remote.
     ir.async_delete_issue(hass, DOMAIN, f"new_remote_{entity_id}")
@@ -342,9 +338,7 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
     # IR subdevices that lost all IR codes → remove number entities.
     removed_ir = ir_subdevices - current_ir_subdevices
     for remote_entity_id, subdevice in removed_ir:
-        _remove_ir_numbers(
-            entity_reg, remote_entity_id, subdevice, ir_numbers, ir_subdevices
-        )
+        _remove_ir_numbers(entity_reg, remote_entity_id, subdevice, ir_numbers, ir_subdevices)
 
     data["known_commands"] = current
     data["ir_subdevices"] = current_ir_subdevices

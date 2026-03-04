@@ -304,11 +304,7 @@ async def test_removed_remote_cleans_up_buttons(hass: HomeAssistant) -> None:
         )
 
     listener = _make_entity_registry_listener(hass, entry)
-    listener(
-        MagicMock(
-            data={"action": "remove", "entity_id": "remote.living_room"}
-        )
-    )
+    listener(MagicMock(data={"action": "remove", "entity_id": "remote.living_room"}))
 
     # Button entities should be removed.
     for cmd in ("power", "mute"):
@@ -316,9 +312,7 @@ async def test_removed_remote_cleans_up_buttons(hass: HomeAssistant) -> None:
         assert entity_reg.async_get_entity_id(Platform.BUTTON, DOMAIN, uid) is None
 
     # Subdevice device should be removed (no remaining entities).
-    assert device_reg.async_get_device(
-        identifiers={(DOMAIN, "remote.living_room_TV")}
-    ) is None
+    assert device_reg.async_get_device(identifiers={(DOMAIN, "remote.living_room_TV")}) is None
 
     # Known commands should be empty.
     assert data["known_commands"] == set()
@@ -336,11 +330,7 @@ async def test_removed_unwatched_remote_is_ignored(hass: HomeAssistant) -> None:
     data["known_commands"] = {("remote.living_room", "TV", "power")}
 
     listener = _make_entity_registry_listener(hass, entry)
-    listener(
-        MagicMock(
-            data={"action": "remove", "entity_id": "remote.bedroom"}
-        )
-    )
+    listener(MagicMock(data={"action": "remove", "entity_id": "remote.bedroom"}))
 
     # Nothing should change.
     assert data["known_commands"] == {("remote.living_room", "TV", "power")}
@@ -475,11 +465,7 @@ async def test_removed_remote_cleans_up_numbers(hass: HomeAssistant) -> None:
         )
 
     listener = _make_entity_registry_listener(hass, entry)
-    listener(
-        MagicMock(
-            data={"action": "remove", "entity_id": "remote.living_room"}
-        )
-    )
+    listener(MagicMock(data={"action": "remove", "entity_id": "remote.living_room"}))
 
     # Number entities should be removed.
     for param in ("delay_secs", "num_repeats"):

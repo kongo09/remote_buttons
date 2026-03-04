@@ -49,9 +49,7 @@ class RemoteCommandNumber(RestoreEntity, NumberEntity):
         self._remote_device_id = remote_device_id
         self._subdevice = subdevice
 
-        self._attr_unique_id = (
-            f"remote_buttons_{remote_entity_id}_{subdevice}_ir_{param}"
-        )
+        self._attr_unique_id = f"remote_buttons_{remote_entity_id}_{subdevice}_ir_{param}"
         self._attr_name = name
         self._attr_native_value = default
         self._attr_native_min_value = min_val

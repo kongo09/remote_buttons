@@ -48,9 +48,7 @@ class RemoteCommandButton(ButtonEntity):
         self._command = command_name
         self._config_entry_id = config_entry_id
 
-        self._attr_unique_id = (
-            f"remote_buttons_{remote_entity_id}_{subdevice}_{command_name}"
-        )
+        self._attr_unique_id = f"remote_buttons_{remote_entity_id}_{subdevice}_{command_name}"
         self._attr_name = f"{subdevice} {command_name}" if subdevice else command_name
 
     @property
@@ -89,6 +87,4 @@ class RemoteCommandButton(ButtonEntity):
         if not self._config_entry_id:
             return None
         data = self.hass.data.get(DOMAIN, {}).get(self._config_entry_id, {})
-        return data.get("ir_numbers", {}).get(
-            (self._remote_entity_id, self._subdevice)
-        )
+        return data.get("ir_numbers", {}).get((self._remote_entity_id, self._subdevice))
