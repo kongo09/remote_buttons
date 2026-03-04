@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select remote entities",
+        "description": "Choose which remote entities to watch for learnt commands.",
+        "data": {
+          "remote_entities": "Remote entities"
+        }
+      }
+    },
+    "abort": {
+      "no_remotes": "No remote entities with learn support were found."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure watched remotes",
+        "data": {
+          "remote_entities": "Remote entities"
+        }
+      }
+    }
+  }
+}
