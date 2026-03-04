@@ -9,6 +9,11 @@ from homeassistant.components.remote import RemoteEntityFeature
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+)
 
 from .const import DOMAIN
 
@@ -36,7 +41,14 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
 
         schema = vol.Schema(
             {
-                vol.Required(CONF_REMOTE_ENTITIES): vol.All(vol.Coerce(list), [vol.In(remotes)]),
+                vol.Required(CONF_REMOTE_ENTITIES): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            SelectOptionDict(value=eid, label=name) for eid, name in remotes.items()
+                        ],
+                        multiple=True,
+                    )
+                ),
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema)
@@ -68,8 +80,13 @@ class RemoteButtonsOptionsFlow(OptionsFlow):
 
         schema = vol.Schema(
             {
-                vol.Required(CONF_REMOTE_ENTITIES, default=current): vol.All(
-                    vol.Coerce(list), [vol.In(remotes)]
+                vol.Required(CONF_REMOTE_ENTITIES, default=current): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            SelectOptionDict(value=eid, label=name) for eid, name in remotes.items()
+                        ],
+                        multiple=True,
+                    )
                 ),
             }
         )

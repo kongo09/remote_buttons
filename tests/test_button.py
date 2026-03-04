@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, patch
+
+from homeassistant.core import HomeAssistant
+
 from custom_components.remote_buttons.button import RemoteCommandButton
 from custom_components.remote_buttons.const import DOMAIN
 
@@ -54,3 +58,29 @@ def test_button_device_info() -> None:
     info = button.device_info
     assert (DOMAIN, "remote.living_room_TV") in info["identifiers"]
     assert info["via_device"] == ("broadlink", "abc123")
+
+
+async def test_button_press_calls_send_command(hass: HomeAssistant) -> None:
+    """Test pressing the button calls remote.send_command."""
+    button = RemoteCommandButton(
+        remote_entity_id="remote.living_room",
+        remote_device_id="abc123",
+        remote_domain="broadlink",
+        subdevice="TV",
+        command_name="power",
+    )
+    button.hass = hass
+
+    with patch.object(hass.services, "async_call", new_callable=AsyncMock) as mock_call:
+        await button.async_press()
+
+    mock_call.assert_called_once_with(
+        "remote",
+        "send_command",
+        {
+            "entity_id": "remote.living_room",
+            "device": "TV",
+            "command": ["power"],
+        },
+        blocking=True,
+    )

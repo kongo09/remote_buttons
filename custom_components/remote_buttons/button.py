@@ -3,13 +3,23 @@
 from __future__ import annotations
 
 from homeassistant.components.button import ButtonEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 
 ATTR_COMMAND = "command"
 ATTR_DEVICE = "device"
 ATTR_ENTITY_ID = "entity_id"
+
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+) -> None:
+    """Set up button platform — stores callback for dynamic entity creation."""
+    hass.data[DOMAIN][entry.entry_id]["async_add_entities"] = async_add_entities
 
 
 class RemoteCommandButton(ButtonEntity):
