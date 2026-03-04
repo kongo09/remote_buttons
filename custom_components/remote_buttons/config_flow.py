@@ -57,15 +57,11 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Return the options flow handler."""
-        return RemoteButtonsOptionsFlow(config_entry)
+        return RemoteButtonsOptionsFlow()
 
 
 class RemoteButtonsOptionsFlow(OptionsFlow):
     """Handle options flow to add/remove watched remotes."""
-
-    def __init__(self, config_entry) -> None:
-        """Initialise options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
