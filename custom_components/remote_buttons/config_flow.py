@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
-from homeassistant.components.remote import SUPPORT_LEARN_COMMAND, RemoteEntityFeature
+from homeassistant.components.remote import RemoteEntityFeature
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
@@ -85,10 +85,7 @@ def _get_learning_remotes(hass) -> dict[str, str]:
         entity_id = state.entity_id
         supported = state.attributes.get("supported_features", 0)
 
-        # Check both the old constant and new enum flag.
-        has_learn = bool(
-            supported & SUPPORT_LEARN_COMMAND or supported & RemoteEntityFeature.LEARN_COMMAND
-        )
+        has_learn = bool(supported & RemoteEntityFeature.LEARN_COMMAND)
         if has_learn:
             entry = registry.async_get(entity_id)
             name = (entry.name or entry.original_name) if entry else entity_id
