@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Seleccionar mandos a distancia",
+        "description": "Elige los mandos a distancia cuyos comandos aprendidos deseas supervisar.",
+        "data": {
+          "remote_entities": "Mandos a distancia"
+        }
+      }
+    },
+    "abort": {
+      "no_remotes": "No se encontraron mandos a distancia con función de aprendizaje."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configurar mandos supervisados",
+        "data": {
+          "remote_entities": "Mandos a distancia"
+        }
+      }
+    }
+  },
+  "issues": {
+    "new_remote_found": {
+      "title": "Nuevo mando detectado: {entity_id}",
+      "description": "Se ha detectado un nuevo mando compatible **{entity_id}**. Puedes añadirlo a Remote Buttons a través de las opciones de configuración de la integración."
+    }
+  }
+}

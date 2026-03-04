@@ -9,8 +9,14 @@ from homeassistant.components.remote import RemoteEntityFeature
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.core import callback
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+)
 
 from .const import DOMAIN
+from .storage import READERS
 
 CONF_REMOTE_ENTITIES = "remote_entities"
 
@@ -36,7 +42,14 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
 
         schema = vol.Schema(
             {
-                vol.Required(CONF_REMOTE_ENTITIES): vol.All(vol.Coerce(list), [vol.In(remotes)]),
+                vol.Required(CONF_REMOTE_ENTITIES): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            SelectOptionDict(value=eid, label=name) for eid, name in remotes.items()
+                        ],
+                        multiple=True,
+                    )
+                ),
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema)
@@ -45,15 +58,11 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Return the options flow handler."""
-        return RemoteButtonsOptionsFlow(config_entry)
+        return RemoteButtonsOptionsFlow()
 
 
 class RemoteButtonsOptionsFlow(OptionsFlow):
     """Handle options flow to add/remove watched remotes."""
-
-    def __init__(self, config_entry) -> None:
-        """Initialise options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
@@ -68,8 +77,13 @@ class RemoteButtonsOptionsFlow(OptionsFlow):
 
         schema = vol.Schema(
             {
-                vol.Required(CONF_REMOTE_ENTITIES, default=current): vol.All(
-                    vol.Coerce(list), [vol.In(remotes)]
+                vol.Required(CONF_REMOTE_ENTITIES, default=current): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            SelectOptionDict(value=eid, label=name) for eid, name in remotes.items()
+                        ],
+                        multiple=True,
+                    )
                 ),
             }
         )
@@ -86,9 +100,14 @@ def _get_learning_remotes(hass) -> dict[str, str]:
         supported = state.attributes.get("supported_features", 0)
 
         has_learn = bool(supported & RemoteEntityFeature.LEARN_COMMAND)
-        if has_learn:
-            entry = registry.async_get(entity_id)
-            name = (entry.name or entry.original_name) if entry else entity_id
-            remotes[entity_id] = name or entity_id
+        if not has_learn:
+            continue
+
+        entry = registry.async_get(entity_id)
+        if not entry or entry.platform not in READERS:
+            continue
+
+        name = (entry.name or entry.original_name) if entry else entity_id
+        remotes[entity_id] = name or entity_id
 
     return remotes

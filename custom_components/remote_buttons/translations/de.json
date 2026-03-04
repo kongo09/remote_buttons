@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Fernbedienungen auswählen",
+        "description": "Wähle die Fernbedienungen aus, deren gelernte Befehle überwacht werden sollen.",
+        "data": {
+          "remote_entities": "Fernbedienungen"
+        }
+      }
+    },
+    "abort": {
+      "no_remotes": "Es wurden keine Fernbedienungen mit Lernfunktion gefunden."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Überwachte Fernbedienungen konfigurieren",
+        "data": {
+          "remote_entities": "Fernbedienungen"
+        }
+      }
+    }
+  },
+  "issues": {
+    "new_remote_found": {
+      "title": "Neue Fernbedienung gefunden: {entity_id}",
+      "description": "Eine neue kompatible Fernbedienung **{entity_id}** wurde erkannt. Du kannst sie über die Konfigurationsoptionen der Integration zu Remote Buttons hinzufügen."
+    }
+  }
+}
