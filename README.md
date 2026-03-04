@@ -2,6 +2,7 @@
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![HACS validation](https://github.com/kongo09/remote_buttons/actions/workflows/hacs.yml/badge.svg)](https://github.com/kongo09/remote_buttons/actions/workflows/hacs.yml)
+[![Hassfest validation](https://github.com/kongo09/remote_buttons/actions/workflows/hassfest.yml/badge.svg)](https://github.com/kongo09/remote_buttons/actions/workflows/hassfest.yml)
 [![Linting](https://github.com/kongo09/remote_buttons/actions/workflows/ci.yml/badge.svg)](https://github.com/kongo09/remote_buttons/actions/workflows/ci.yml)
 [![Tests](https://github.com/kongo09/remote_buttons/actions/workflows/tests.yml/badge.svg)](https://github.com/kongo09/remote_buttons/actions/workflows/tests.yml)
 [![Release](https://img.shields.io/github/v/release/kongo09/remote_buttons)](https://github.com/kongo09/remote_buttons/releases)
