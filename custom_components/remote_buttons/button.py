@@ -32,9 +32,7 @@ class RemoteCommandButton(ButtonEntity):
         self._subdevice = subdevice
         self._command = command_name
 
-        self._attr_unique_id = (
-            f"remote_buttons_{remote_entity_id}_{subdevice}_{command_name}"
-        )
+        self._attr_unique_id = f"remote_buttons_{remote_entity_id}_{subdevice}_{command_name}"
         self._attr_name = f"{subdevice} {command_name}" if subdevice else command_name
 
     @property

@@ -20,9 +20,7 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step: select remote entities to watch."""
         if user_input is not None:
             return self.async_create_entry(
@@ -38,9 +36,7 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
 
         schema = vol.Schema(
             {
-                vol.Required(CONF_REMOTE_ENTITIES): vol.All(
-                    vol.Coerce(list), [vol.In(remotes)]
-                ),
+                vol.Required(CONF_REMOTE_ENTITIES): vol.All(vol.Coerce(list), [vol.In(remotes)]),
             }
         )
         return self.async_show_form(step_id="user", data_schema=schema)
@@ -59,9 +55,7 @@ class RemoteButtonsOptionsFlow(OptionsFlow):
         """Initialise options flow."""
         self.config_entry = config_entry
 
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(
@@ -74,9 +68,9 @@ class RemoteButtonsOptionsFlow(OptionsFlow):
 
         schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_REMOTE_ENTITIES, default=current
-                ): vol.All(vol.Coerce(list), [vol.In(remotes)]),
+                vol.Required(CONF_REMOTE_ENTITIES, default=current): vol.All(
+                    vol.Coerce(list), [vol.In(remotes)]
+                ),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)
@@ -93,8 +87,7 @@ def _get_learning_remotes(hass) -> dict[str, str]:
 
         # Check both the old constant and new enum flag.
         has_learn = bool(
-            supported & SUPPORT_LEARN_COMMAND
-            or supported & RemoteEntityFeature.LEARN_COMMAND
+            supported & SUPPORT_LEARN_COMMAND or supported & RemoteEntityFeature.LEARN_COMMAND
         )
         if has_learn:
             entry = registry.async_get(entity_id)

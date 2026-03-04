@@ -50,9 +50,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: RemoteButtonsConfigEntr
 
 
 @callback
-def _make_service_listener(
-    hass: HomeAssistant, entry: RemoteButtonsConfigEntry
-):
+def _make_service_listener(hass: HomeAssistant, entry: RemoteButtonsConfigEntry):
     """Return an event listener that triggers a delayed re-scan on learn/delete."""
     watched = set(entry.data.get("remote_entities", []))
 
@@ -92,9 +90,7 @@ def _make_service_listener(
 
 
 @callback
-def _schedule_scan(
-    hass: HomeAssistant, entry: RemoteButtonsConfigEntry, delay: float
-) -> None:
+def _schedule_scan(hass: HomeAssistant, entry: RemoteButtonsConfigEntry, delay: float) -> None:
     """Cancel any pending scan and schedule a new one after *delay* seconds."""
     data = hass.data[DOMAIN].get(entry.entry_id, {})
     cancel = data.get("scan_unsub")
@@ -107,9 +103,7 @@ def _schedule_scan(
     data["scan_unsub"] = hass.helpers.event.async_call_later(delay, _run_scan)
 
 
-async def async_scan_remote_commands(
-    hass: HomeAssistant, entry: RemoteButtonsConfigEntry
-) -> None:
+async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsConfigEntry) -> None:
     """Scan storage for all watched remotes and add/remove button entities."""
     # TODO: Implement full scan logic — read storage per remote, diff against
     # known commands, call async_add_entities / async_remove for changes.
