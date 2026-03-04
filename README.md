@@ -1,6 +1,8 @@
 # Remote Buttons
 
-[![CI](https://github.com/kongo09/remote_buttons/actions/workflows/ci.yml/badge.svg)](https://github.com/kongo09/remote_buttons/actions/workflows/ci.yml)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![Linting](https://github.com/kongo09/remote_buttons/actions/workflows/ci.yml/badge.svg)](https://github.com/kongo09/remote_buttons/actions/workflows/ci.yml)
+[![Tests](https://github.com/kongo09/remote_buttons/actions/workflows/tests.yml/badge.svg)](https://github.com/kongo09/remote_buttons/actions/workflows/tests.yml)
 
 A Home Assistant custom integration that automatically creates **button entities** for every learnt command on your IR/RF remote entities.
 
