@@ -71,7 +71,11 @@ async def test_button_press_calls_send_command(hass: HomeAssistant) -> None:
     )
     button.hass = hass
 
-    with patch.object(hass.services, "async_call", new_callable=AsyncMock) as mock_call:
+    mock_call = AsyncMock()
+    with patch(
+        "homeassistant.core.ServiceRegistry.async_call",
+        mock_call,
+    ):
         await button.async_press()
 
     mock_call.assert_called_once_with(
