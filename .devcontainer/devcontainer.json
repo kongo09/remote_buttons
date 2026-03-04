@@ -1,0 +1,14 @@
+{
+  "name": "Remote Buttons Dev",
+  "image": "mcr.microsoft.com/devcontainers/python:3.13",
+  "postCreateCommand": "pip install -r requirements_test.txt && pip install -e .",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "charliermarsh.ruff",
+        "ms-python.python",
+        "ms-python.mypy-type-checker"
+      ]
+    }
+  }
+}
