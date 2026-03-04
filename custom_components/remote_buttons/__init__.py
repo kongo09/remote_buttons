@@ -2,17 +2,14 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_CALL_SERVICE, Platform
 from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.helpers import entity_registry as er
 
 from .const import DELETE_SCAN_DELAY, DOMAIN, LEARN_SCAN_DELAY
-from .storage import READERS
 
 _LOGGER = logging.getLogger(__name__)
 
