@@ -1,0 +1,32 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sélectionner les télécommandes",
+        "description": "Choisissez les télécommandes dont les commandes apprises doivent être surveillées.",
+        "data": {
+          "remote_entities": "Télécommandes"
+        }
+      }
+    },
+    "abort": {
+      "no_remotes": "Aucune télécommande avec fonction d'apprentissage n'a été trouvée."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configurer les télécommandes surveillées",
+        "data": {
+          "remote_entities": "Télécommandes"
+        }
+      }
+    }
+  },
+  "issues": {
+    "new_remote_found": {
+      "title": "Nouvelle télécommande détectée : {entity_id}",
+      "description": "Une nouvelle télécommande compatible **{entity_id}** a été détectée. Vous pouvez l'ajouter à Remote Buttons via les options de configuration de l'intégration."
+    }
+  }
+}
