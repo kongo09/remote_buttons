@@ -18,6 +18,8 @@ Works with any remote integration that stores learnt commands using HA's `helper
 2. The integration reads each remote's stored commands and creates a button entity per command.
 3. When you press a button, it calls `remote.send_command` on the underlying remote — no direct hardware interaction.
 4. When you learn or delete commands, the integration detects the change and updates buttons automatically.
+5. For IR sub-devices, two configuration entities are created — **IR delay** (seconds between commands) and **IR repeat** (number of repeats) — so you can tune send behaviour per device.
+6. When a compatible remote integration is added, a repair issue notifies you so you can add it to the watch list.
 
 ## Installation
 

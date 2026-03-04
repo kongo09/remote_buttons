@@ -16,6 +16,7 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import DOMAIN
+from .storage import READERS
 
 CONF_REMOTE_ENTITIES = "remote_entities"
 
@@ -99,9 +100,14 @@ def _get_learning_remotes(hass) -> dict[str, str]:
         supported = state.attributes.get("supported_features", 0)
 
         has_learn = bool(supported & RemoteEntityFeature.LEARN_COMMAND)
-        if has_learn:
-            entry = registry.async_get(entity_id)
-            name = (entry.name or entry.original_name) if entry else entity_id
-            remotes[entity_id] = name or entity_id
+        if not has_learn:
+            continue
+
+        entry = registry.async_get(entity_id)
+        if not entry or entry.platform not in READERS:
+            continue
+
+        name = (entry.name or entry.original_name) if entry else entity_id
+        remotes[entity_id] = name or entity_id
 
     return remotes

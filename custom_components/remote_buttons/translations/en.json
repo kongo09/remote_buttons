@@ -22,5 +22,11 @@
         }
       }
     }
+  },
+  "issues": {
+    "new_remote_found": {
+      "title": "New remote found: {entity_id}",
+      "description": "A new compatible remote entity **{entity_id}** was detected. You can add it to Remote Buttons via the integration's configuration options."
+    }
   }
 }
