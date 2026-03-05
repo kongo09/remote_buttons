@@ -37,7 +37,6 @@ Works with any remote integration that stores learnt commands using HA's `helper
 2. [![Add repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kongo09&repository=remote_buttons&category=integration)
 3. Install **Remote Buttons** from the HACS integration list.
 4. Restart Home Assistant.
-5. [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_buttons)
 
 ### Manual
 
