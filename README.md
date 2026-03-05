@@ -9,10 +9,10 @@
 
 A Home Assistant custom integration that automatically creates **button entities** for every learnt command on your IR/RF remote entities.
 
-Works with any remote integration that stores learnt commands using HA's `helpers.storage.Store` convention, including:
+Works with any remote integration that stores learnt commands using HA's `helpers.storage.Store` convention, especially:
 
-- **Broadlink** remotes
-- **tuya-local** remotes
+- **[Broadlink](https://www.home-assistant.io/integrations/broadlink/)** remotes
+- **[Tuya Local](https://github.com/make-all/tuya-local)** remotes
 
 ## Screenshots
 
