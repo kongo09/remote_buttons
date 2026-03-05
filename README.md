@@ -33,20 +33,25 @@ Works with any remote integration that stores learnt commands using HA's `helper
 
 ### HACS (recommended)
 
-1. Add this repository as a custom repository in HACS.
-2. Install "Remote buttons".
-3. Restart Home Assistant.
-4. Go to **Settings > Devices & Services > Add Integration** and search for "Remote buttons".
+1. If you haven't already, install [HACS](https://hacs.xyz/).
+2. [![Add repository to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=kongo09&repository=remote_buttons&category=integration)
+3. Install **Remote Buttons** from the HACS integration list.
+4. Restart Home Assistant.
+5. [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_buttons)
 
 ### Manual
 
-Copy `custom_components/remote_buttons/` into your HA `config/custom_components/` directory and restart.
+1. Download the [latest release](https://github.com/kongo09/remote_buttons/releases).
+2. Extract and copy `custom_components/remote_buttons/` into your `config/custom_components/` directory.
+3. Restart Home Assistant.
 
 ## Configuration
 
-The config flow presents a list of remote entities that support `learn_command`. Select the ones you want to watch, and buttons will be created for all their learnt commands.
+1. [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_buttons)
+2. Select the remote entities you want to watch — only remotes that support `learn_command` are shown.
+3. Button entities are created automatically for all learnt commands on the selected remotes.
 
-You can update the selection at any time via the integration's options flow.
+You can update the selection at any time via **Settings > Devices & Services > Remote Buttons > Configure**.
 
 ## License
 
