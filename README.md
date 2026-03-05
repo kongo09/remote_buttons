@@ -53,6 +53,3 @@ Works with any remote integration that stores learnt commands using HA's `helper
 
 You can update the selection at any time via **Settings > Devices & Services > Remote Buttons > Configure**.
 
-## License
-
-[MIT](LICENSE)
