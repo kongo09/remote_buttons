@@ -20,6 +20,10 @@ Works with any remote integration that stores learnt commands using HA's `helper
 |---|---|
 | ![Integration overview](images/main_screen.png) | ![Device controls](images/controls.png) |
 
+## Coffee
+
+<a href="https://www.buymeacoffee.com/kongo09" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ## How it works
 
 1. You configure which remote entities to watch.
