@@ -82,7 +82,7 @@ async def test_scan_creates_buttons(hass: HomeAssistant) -> None:
     buttons = add.call_args[0][0]
     assert len(buttons) == 2
     names = {b.name for b in buttons}
-    assert names == {"TV mute", "TV power"}
+    assert names == {"mute", "power"}
 
 
 async def test_scan_removes_buttons(hass: HomeAssistant) -> None:
