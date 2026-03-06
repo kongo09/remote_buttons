@@ -50,11 +50,25 @@ Works with any remote integration that stores learnt commands using HA's `helper
 
 ## Configuration
 
+### Initial setup
+
 1. [![Add integration](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=remote_buttons)
 2. Select the remote entities you want to watch — only remotes that support `learn_command` are shown.
 3. Button entities are created automatically for all learnt commands on the selected remotes.
 
+#### Setup parameters
+
+| Parameter | Description |
+|---|---|
+| **Remote entities** | One or more remote entities to watch. Only remotes on supported platforms (Broadlink, Tuya Local) that advertise the `learn_command` feature are listed. |
+
+### Options
+
 You can update the selection at any time via **Settings > Devices & Services > Remote Buttons > Configure**.
+
+| Parameter | Description |
+|---|---|
+| **Remote entities** | Add or remove remotes from the watch list. Removing a remote deletes all its button and number entities. Adding a remote triggers an immediate scan for learnt commands. |
 
 ## Removal
 

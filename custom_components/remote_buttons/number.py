@@ -13,6 +13,8 @@ from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DEFAULT_IR_DELAY, DEFAULT_IR_REPEATS, DOMAIN
 
+PARALLEL_UPDATES = 0
+
 
 async def async_setup_entry(
     hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback

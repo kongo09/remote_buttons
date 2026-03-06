@@ -11,6 +11,8 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 
+PARALLEL_UPDATES = 0
+
 ATTR_COMMAND = "command"
 ATTR_DELAY_SECS = "delay_secs"
 ATTR_DEVICE = "device"

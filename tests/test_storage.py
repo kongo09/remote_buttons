@@ -59,3 +59,29 @@ async def test_tuya_local_reader_returns_commands(hass: HomeAssistant) -> None:
 
     assert "Fan" in result
     assert result["Fan"]["speed1"] == "code1"
+
+
+async def test_tuya_local_reader_returns_empty_on_missing(hass: HomeAssistant) -> None:
+    """Test TuyaLocalStorageReader returns empty dict when no storage exists."""
+    with patch(
+        "custom_components.remote_buttons.storage.Store.async_load",
+        new_callable=AsyncMock,
+        return_value=None,
+    ):
+        reader = TuyaLocalStorageReader()
+        result = await reader.async_read_commands(hass, "missing_uid")
+
+    assert result == {}
+
+
+async def test_tuya_local_reader_returns_empty_on_error(hass: HomeAssistant) -> None:
+    """Test TuyaLocalStorageReader returns empty dict on storage error."""
+    with patch(
+        "custom_components.remote_buttons.storage.Store.async_load",
+        new_callable=AsyncMock,
+        side_effect=OSError("disk error"),
+    ):
+        reader = TuyaLocalStorageReader()
+        result = await reader.async_read_commands(hass, "broken_uid")
+
+    assert result == {}
