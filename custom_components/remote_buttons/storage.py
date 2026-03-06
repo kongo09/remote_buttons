@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class StorageReader(ABC):
@@ -19,6 +22,29 @@ class StorageReader(ABC):
         """Return {subdevice: {command_name: code}}."""
 
 
+def _parse_storage_data(data: Any, store_key: str) -> dict[str, dict[str, Any]]:
+    """Parse storage data, skipping malformed entries."""
+    if not isinstance(data, dict):
+        _LOGGER.warning(
+            "Storage %s has unexpected type %s, expected dict",
+            store_key,
+            type(data).__name__,
+        )
+        return {}
+    result: dict[str, dict[str, Any]] = {}
+    for subdevice, commands in data.items():
+        if not isinstance(commands, dict):
+            _LOGGER.warning(
+                "Storage %s: skipping subdevice %r (expected dict, got %s)",
+                store_key,
+                subdevice,
+                type(commands).__name__,
+            )
+            continue
+        result[subdevice] = commands
+    return result
+
+
 class BroadlinkStorageReader(StorageReader):
     """Read from broadlink_remote_{unique_id}_codes."""
 
@@ -26,12 +52,16 @@ class BroadlinkStorageReader(StorageReader):
         self, hass: HomeAssistant, unique_id: str
     ) -> dict[str, dict[str, Any]]:
         """Load learnt commands from Broadlink storage."""
-        store: Store = Store(hass, 1, f"broadlink_remote_{unique_id}_codes")
-        data = await store.async_load()
+        store_key = f"broadlink_remote_{unique_id}_codes"
+        try:
+            store: Store = Store(hass, 1, store_key)
+            data = await store.async_load()
+        except Exception:
+            _LOGGER.warning("Failed to read storage %s", store_key, exc_info=True)
+            return {}
         if data is None:
             return {}
-        # Broadlink stores {subdevice: {command: code}}.
-        return {k: v for k, v in data.items() if isinstance(v, dict)}
+        return _parse_storage_data(data, store_key)
 
 
 class TuyaLocalStorageReader(StorageReader):
@@ -41,12 +71,16 @@ class TuyaLocalStorageReader(StorageReader):
         self, hass: HomeAssistant, unique_id: str
     ) -> dict[str, dict[str, Any]]:
         """Load learnt commands from tuya-local storage."""
-        store: Store = Store(hass, 1, f"tuya_local_remote_{unique_id}_codes")
-        data = await store.async_load()
+        store_key = f"tuya_local_remote_{unique_id}_codes"
+        try:
+            store: Store = Store(hass, 1, store_key)
+            data = await store.async_load()
+        except Exception:
+            _LOGGER.warning("Failed to read storage %s", store_key, exc_info=True)
+            return {}
         if data is None:
             return {}
-        # Same structure as Broadlink.
-        return {k: v for k, v in data.items() if isinstance(v, dict)}
+        return _parse_storage_data(data, store_key)
 
 
 READERS: dict[str, StorageReader] = {

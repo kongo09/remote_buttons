@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import logging
 from typing import Any
@@ -35,6 +36,7 @@ class RemoteButtonsData:
     async_add_entities: AddEntitiesCallback | None = None
     async_add_number_entities: AddEntitiesCallback | None = None
     scan_unsub: CALLBACK_TYPE | None = None
+    scan_lock: asyncio.Lock = dataclasses.field(default_factory=asyncio.Lock)
 
 
 type RemoteButtonsConfigEntry = ConfigEntry[RemoteButtonsData]
@@ -116,13 +118,18 @@ def _make_service_listener(hass: HomeAssistant, entry: RemoteButtonsConfigEntry)
             entity_id,
             delay,
         )
-        _schedule_scan(hass, entry, delay)
+        _schedule_scan(hass, entry, delay, remote_entity_ids=[entity_id])
 
     return _listener
 
 
 @callback
-def _schedule_scan(hass: HomeAssistant, entry: RemoteButtonsConfigEntry, delay: float) -> None:
+def _schedule_scan(
+    hass: HomeAssistant,
+    entry: RemoteButtonsConfigEntry,
+    delay: float,
+    remote_entity_ids: list[str] | None = None,
+) -> None:
     """Cancel any pending scan and schedule a new one after *delay* seconds."""
     data = entry.runtime_data
     if data.scan_unsub is not None:
@@ -130,7 +137,9 @@ def _schedule_scan(hass: HomeAssistant, entry: RemoteButtonsConfigEntry, delay: 
 
     @callback
     def _run_scan(_now) -> None:
-        hass.async_create_task(async_scan_remote_commands(hass, entry))
+        hass.async_create_task(
+            async_scan_remote_commands(hass, entry, remote_entity_ids=remote_entity_ids)
+        )
 
     data.scan_unsub = async_call_later(hass, delay, _run_scan)
 
@@ -275,8 +284,26 @@ def _get_remote_info(hass: HomeAssistant, remote_entity_id: str) -> tuple[str, s
     return None
 
 
-async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsConfigEntry) -> None:
-    """Scan storage for all watched remotes and add/remove button entities."""
+async def async_scan_remote_commands(
+    hass: HomeAssistant,
+    entry: RemoteButtonsConfigEntry,
+    remote_entity_ids: list[str] | None = None,
+) -> None:
+    """Scan storage for watched remotes and add/remove button entities.
+
+    If *remote_entity_ids* is given, only those remotes are scanned and
+    reconciled; the rest of the known state is kept intact.
+    """
+    async with entry.runtime_data.scan_lock:
+        await _async_scan_remote_commands_locked(hass, entry, remote_entity_ids)
+
+
+async def _async_scan_remote_commands_locked(
+    hass: HomeAssistant,
+    entry: RemoteButtonsConfigEntry,
+    remote_entity_ids: list[str] | None = None,
+) -> None:
+    """Inner scan logic, must be called under scan_lock."""
     data = entry.runtime_data
     known = data.known_commands
     add_entities = data.async_add_entities
@@ -286,15 +313,16 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
 
     entity_reg = er.async_get(hass)
     watched = entry.data.get("remote_entities", [])
+    scan_targets = remote_entity_ids if remote_entity_ids is not None else watched
 
     current: set[tuple[str, str, str]] = set()
     current_ir_subdevices: set[tuple[str, str]] = set()
     remote_info: dict[str, tuple[str, str]] = {}
 
-    for remote_entity_id in watched:
+    for remote_entity_id in scan_targets:
         info = _get_remote_info(hass, remote_entity_id)
         if not info:
-            _LOGGER.debug("Skipping %s: not found or unsupported platform", remote_entity_id)
+            _LOGGER.warning("Skipping %s: not found or unsupported platform", remote_entity_id)
             continue
 
         platform, dev_id_str = info
@@ -308,8 +336,14 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
             if _has_ir_codes(cmds):
                 current_ir_subdevices.add((remote_entity_id, subdevice))
 
+    # When doing a targeted scan, only diff against the subset of known
+    # state for the scanned remotes.
+    scanned = set(scan_targets)
+    known_scoped = {t for t in known if t[0] in scanned}
+    ir_scoped = {t for t in ir_subdevices if t[0] in scanned}
+
     # New commands → create buttons.
-    added = current - known
+    added = current - known_scoped
     if added and add_entities:
         new_buttons = []
         for remote_entity_id, subdevice, cmd_name in sorted(added):
@@ -327,7 +361,7 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
         add_entities(new_buttons)
 
     # New IR subdevices → create number entities.
-    new_ir = current_ir_subdevices - ir_subdevices
+    new_ir = current_ir_subdevices - ir_scoped
     if new_ir and add_number_entities:
         new_numbers = []
         for remote_entity_id, subdevice in sorted(new_ir):
@@ -343,7 +377,7 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
         add_number_entities(new_numbers)
 
     # Removed commands → remove entities from registry.
-    removed = known - current
+    removed = known_scoped - current
     for remote_entity_id, subdevice, cmd_name in removed:
         uid = f"remote_buttons_{remote_entity_id}_{subdevice}_{cmd_name}"
         ent_id = entity_reg.async_get_entity_id(Platform.BUTTON, DOMAIN, uid)
@@ -351,12 +385,13 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
             entity_reg.async_remove(ent_id)
 
     # IR subdevices that lost all IR codes → remove number entities.
-    removed_ir = ir_subdevices - current_ir_subdevices
+    removed_ir = ir_scoped - current_ir_subdevices
     for remote_entity_id, subdevice in removed_ir:
         _remove_ir_numbers(entity_reg, remote_entity_id, subdevice, ir_numbers, ir_subdevices)
 
-    data.known_commands = current
-    data.ir_subdevices = current_ir_subdevices
+    # Merge: replace scoped entries, keep the rest.
+    data.known_commands = (known - known_scoped) | current
+    data.ir_subdevices = (ir_subdevices - ir_scoped) | current_ir_subdevices
 
     _LOGGER.debug(
         "Scan complete: %d current, %d added, %d removed",
