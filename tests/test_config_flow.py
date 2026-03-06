@@ -127,3 +127,49 @@ async def test_options_flow_round_trip(
 
     # Options should contain the updated list.
     assert entry.options["remote_entities"] == ["remote.living_room", "remote.bedroom"]
+
+
+async def test_reconfigure_flow_updates_entry(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    """Test that the reconfigure flow updates entry data and reloads."""
+    setup_remote(hass)
+    setup_remote(hass, entity_id="remote.bedroom", device_identifier="ff1122")
+
+    hass.states.async_set(
+        "remote.living_room",
+        "off",
+        {"supported_features": RemoteEntityFeature.LEARN_COMMAND},
+    )
+    hass.states.async_set(
+        "remote.bedroom",
+        "off",
+        {"supported_features": RemoteEntityFeature.LEARN_COMMAND},
+    )
+
+    entry = make_entry(hass, ["remote.living_room"])
+
+    with patch(
+        f"custom_components.{DOMAIN}.async_setup_entry",
+        return_value=True,
+    ):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    result = await entry.start_reconfigure_flow(hass)
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "reconfigure"
+
+    with patch(
+        f"custom_components.{DOMAIN}.async_setup_entry",
+        return_value=True,
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            user_input={"remote_entities": ["remote.living_room", "remote.bedroom"]},
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data["remote_entities"] == ["remote.living_room", "remote.bedroom"]

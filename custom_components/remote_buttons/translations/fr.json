@@ -7,6 +7,12 @@
         "data": {
           "remote_entities": "Télécommandes"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurer les télécommandes surveillées",
+        "data": {
+          "remote_entities": "Télécommandes"
+        }
       }
     },
     "abort": {

@@ -7,6 +7,12 @@
         "data": {
           "remote_entities": "Fernbedienungen"
         }
+      },
+      "reconfigure": {
+        "title": "Überwachte Fernbedienungen neu konfigurieren",
+        "data": {
+          "remote_entities": "Fernbedienungen"
+        }
       }
     },
     "abort": {

@@ -7,6 +7,12 @@
         "data": {
           "remote_entities": "Remote entities"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure watched remotes",
+        "data": {
+          "remote_entities": "Remote entities"
+        }
       }
     },
     "abort": {

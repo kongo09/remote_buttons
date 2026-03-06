@@ -7,6 +7,12 @@
         "data": {
           "remote_entities": "Mandos a distancia"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar mandos supervisados",
+        "data": {
+          "remote_entities": "Mandos a distancia"
+        }
       }
     },
     "abort": {

@@ -56,6 +56,36 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
         )
         return self.async_show_form(step_id="user", data_schema=schema)
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle reconfiguration of watched remotes."""
+        if user_input is not None:
+            return self.async_update_reload_and_abort(
+                self._get_reconfigure_entry(),
+                data={CONF_REMOTE_ENTITIES: user_input[CONF_REMOTE_ENTITIES]},
+            )
+
+        remotes = _get_learning_remotes(self.hass)
+
+        if not remotes:
+            return self.async_abort(reason="no_remotes")
+
+        current = self._get_reconfigure_entry().data.get(CONF_REMOTE_ENTITIES, [])
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_REMOTE_ENTITIES, default=current): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            SelectOptionDict(value=eid, label=name) for eid, name in remotes.items()
+                        ],
+                        multiple=True,
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(step_id="reconfigure", data_schema=schema)
+
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
