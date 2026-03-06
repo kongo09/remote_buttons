@@ -7,6 +7,12 @@
         "data": {
           "remote_entities": "Télécommandes"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigurer les télécommandes surveillées",
+        "data": {
+          "remote_entities": "Télécommandes"
+        }
       }
     },
     "abort": {
@@ -50,6 +56,11 @@
           }
         }
       }
+    }
+  },
+  "exceptions": {
+    "send_command_failed": {
+      "message": "Échec de l'envoi de la commande \"{command}\" via {remote}."
     }
   }
 }

@@ -6,6 +6,7 @@ from typing import Any
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -77,12 +78,22 @@ class RemoteCommandButton(ButtonEntity):
             service_data[ATTR_DELAY_SECS] = delay_entity.native_value
             service_data[ATTR_NUM_REPEATS] = int(repeats_entity.native_value)
 
-        await self.hass.services.async_call(
-            "remote",
-            "send_command",
-            service_data,
-            blocking=True,
-        )
+        try:
+            await self.hass.services.async_call(
+                "remote",
+                "send_command",
+                service_data,
+                blocking=True,
+            )
+        except Exception as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="send_command_failed",
+                translation_placeholders={
+                    "command": self._command,
+                    "remote": self._remote_entity_id,
+                },
+            ) from err
 
     def _get_ir_numbers(self) -> tuple | None:
         """Look up the IR number entities for this button's subdevice."""

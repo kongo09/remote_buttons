@@ -7,6 +7,12 @@
         "data": {
           "remote_entities": "Remote entities"
         }
+      },
+      "reconfigure": {
+        "title": "Reconfigure watched remotes",
+        "data": {
+          "remote_entities": "Remote entities"
+        }
       }
     },
     "abort": {
@@ -50,6 +56,11 @@
           }
         }
       }
+    }
+  },
+  "exceptions": {
+    "send_command_failed": {
+      "message": "Failed to send command \"{command}\" via {remote}."
     }
   }
 }

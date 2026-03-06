@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.remote_buttons import RemoteButtonsData
 from custom_components.remote_buttons.button import RemoteCommandButton
@@ -143,3 +145,28 @@ async def test_button_press_without_ir_numbers(hass: HomeAssistant) -> None:
     call_data = mock_call.call_args[0][2]
     assert "delay_secs" not in call_data
     assert "num_repeats" not in call_data
+
+
+async def test_button_press_raises_translated_error(hass: HomeAssistant) -> None:
+    """Test that a service call failure raises HomeAssistantError with translation."""
+    button = RemoteCommandButton(
+        remote_entity_id="remote.living_room",
+        remote_device_id="abc123",
+        remote_domain="broadlink",
+        subdevice="TV",
+        command_name="power",
+    )
+    button.hass = hass
+
+    with (
+        patch(
+            "homeassistant.core.ServiceRegistry.async_call",
+            AsyncMock(side_effect=Exception("connection lost")),
+        ),
+        pytest.raises(HomeAssistantError) as exc_info,
+    ):
+        await button.async_press()
+
+    assert exc_info.value.translation_key == "send_command_failed"
+    assert exc_info.value.translation_placeholders["command"] == "power"
+    assert exc_info.value.translation_placeholders["remote"] == "remote.living_room"
