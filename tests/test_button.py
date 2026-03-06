@@ -23,7 +23,7 @@ def test_button_unique_id() -> None:
 
 
 def test_button_name_with_subdevice() -> None:
-    """Test button name includes subdevice."""
+    """Test button name is just the command (device provides subdevice prefix)."""
     button = RemoteCommandButton(
         remote_entity_id="remote.living_room",
         remote_device_id="abc123",
@@ -31,7 +31,7 @@ def test_button_name_with_subdevice() -> None:
         subdevice="TV",
         command_name="power",
     )
-    assert button.name == "TV power"
+    assert button.name == "power"
 
 
 def test_button_name_without_subdevice() -> None:
