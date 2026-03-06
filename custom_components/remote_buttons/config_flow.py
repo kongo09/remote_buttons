@@ -107,7 +107,7 @@ def _get_learning_remotes(hass) -> dict[str, str]:
         if not entry or entry.platform not in READERS:
             continue
 
-        name = (entry.name or entry.original_name) if entry else entity_id
-        remotes[entity_id] = name or entity_id
+        name = entry.name or entry.original_name or state.name or entity_id
+        remotes[entity_id] = name
 
     return remotes

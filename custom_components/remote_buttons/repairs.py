@@ -59,8 +59,11 @@ def _resolve_name(hass: HomeAssistant, entity_id: str) -> str:
     """Look up the friendly name for an entity, falling back to the entity_id."""
     entity_reg = er.async_get(hass)
     reg_entry = entity_reg.async_get(entity_id)
-    if reg_entry:
-        return reg_entry.name or reg_entry.original_name or entity_id
+    if reg_entry and (reg_entry.name or reg_entry.original_name):
+        return reg_entry.name or reg_entry.original_name  # type: ignore[return-value]
+    state = hass.states.get(entity_id)
+    if state and state.name:
+        return state.name
     return entity_id
 
 
