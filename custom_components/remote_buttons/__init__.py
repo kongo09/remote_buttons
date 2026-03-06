@@ -178,6 +178,9 @@ def _handle_new_remote(
     if not reg_entry or reg_entry.platform not in READERS:
         return
 
+    state = hass.states.get(entity_id)
+    name = reg_entry.name or reg_entry.original_name or (state.name if state else None) or entity_id
+
     _LOGGER.info("New compatible remote detected: %s", entity_id)
     ir.async_create_issue(
         hass,
@@ -186,8 +189,8 @@ def _handle_new_remote(
         is_fixable=True,
         severity=ir.IssueSeverity.WARNING,
         translation_key="new_remote_found",
-        translation_placeholders={"entity_id": entity_id},
-        data={"entity_id": entity_id},
+        translation_placeholders={"entity_id": entity_id, "name": name},
+        data={"entity_id": entity_id, "name": name},
     )
 
 

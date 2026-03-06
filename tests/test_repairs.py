@@ -13,18 +13,20 @@ from tests.conftest import make_entry, setup_remote
 
 
 async def test_create_fix_flow_uses_data(hass: HomeAssistant) -> None:
-    """async_create_fix_flow extracts entity_id from issue data."""
+    """async_create_fix_flow extracts entity_id and name from issue data."""
     flow = await async_create_fix_flow(
         hass,
         issue_id="new_remote_remote.bedroom",
-        data={"entity_id": "remote.bedroom"},
+        data={"entity_id": "remote.bedroom", "name": "Bedroom Remote"},
     )
     assert isinstance(flow, AddRemoteRepairFlow)
     assert flow._entity_id == "remote.bedroom"
+    assert flow._name == "Bedroom Remote"
 
 
 async def test_create_fix_flow_fallback_without_data(hass: HomeAssistant) -> None:
-    """async_create_fix_flow falls back to parsing issue_id if data is None."""
+    """async_create_fix_flow falls back to parsing issue_id and registry lookup if data is None."""
+    setup_remote(hass, entity_id="remote.bedroom", device_identifier="ff1122")
     flow = await async_create_fix_flow(
         hass,
         issue_id="new_remote_remote.bedroom",
@@ -32,6 +34,7 @@ async def test_create_fix_flow_fallback_without_data(hass: HomeAssistant) -> Non
     )
     assert isinstance(flow, AddRemoteRepairFlow)
     assert flow._entity_id == "remote.bedroom"
+    assert flow._name == "remote.bedroom"  # no name in registry, falls back to entity_id
 
 
 async def test_repair_flow_confirm_adds_remote(hass: HomeAssistant) -> None:
@@ -47,12 +50,12 @@ async def test_repair_flow_confirm_adds_remote(hass: HomeAssistant) -> None:
         is_fixable=True,
         severity=ir.IssueSeverity.WARNING,
         translation_key="new_remote_found",
-        translation_placeholders={"entity_id": "remote.bedroom"},
-        data={"entity_id": "remote.bedroom"},
+        translation_placeholders={"entity_id": "remote.bedroom", "name": "Bedroom Remote"},
+        data={"entity_id": "remote.bedroom", "name": "Bedroom Remote"},
     )
     assert ir.async_get(hass).async_get_issue(DOMAIN, "new_remote_remote.bedroom") is not None
 
-    flow = AddRemoteRepairFlow("remote.bedroom")
+    flow = AddRemoteRepairFlow("remote.bedroom", "Bedroom Remote")
     flow.hass = hass
     flow.issue_id = "new_remote_remote.bedroom"
 
@@ -60,6 +63,7 @@ async def test_repair_flow_confirm_adds_remote(hass: HomeAssistant) -> None:
     result = await flow.async_step_init(user_input=None)
     assert result["type"] == "form"
     assert result["step_id"] == "init"
+    assert result["description_placeholders"]["name"] == "Bedroom Remote"
 
     # Step 2: confirm.
     with patch(
@@ -83,7 +87,7 @@ async def test_repair_flow_does_not_duplicate(hass: HomeAssistant) -> None:
     setup_remote(hass)
     entry = make_entry(hass, ["remote.living_room"])
 
-    flow = AddRemoteRepairFlow("remote.living_room")
+    flow = AddRemoteRepairFlow("remote.living_room", "Living Room Remote")
     flow.hass = hass
     flow.issue_id = "new_remote_remote.living_room"
 

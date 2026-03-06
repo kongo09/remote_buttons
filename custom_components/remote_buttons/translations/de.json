@@ -40,12 +40,12 @@
   },
   "issues": {
     "new_remote_found": {
-      "title": "Neue Fernbedienung gefunden: {entity_id}",
+      "title": "Neue Fernbedienung gefunden: {name}",
       "fix_flow": {
         "step": {
           "init": {
-            "title": "Fernbedienung hinzufügen: {entity_id}",
-            "description": "Möchtest du **{entity_id}** zur Liste der überwachten Fernbedienungen hinzufügen?"
+            "title": "Fernbedienung hinzufügen: {name}",
+            "description": "Möchtest du **{name}** zur Liste der überwachten Fernbedienungen hinzufügen?"
           }
         }
       }
