@@ -56,3 +56,8 @@ Works with any remote integration that stores learnt commands using HA's `helper
 
 You can update the selection at any time via **Settings > Devices & Services > Remote Buttons > Configure**.
 
+## Removal
+
+1. Go to **Settings > Devices & Services > Remote Buttons**.
+2. Click the three-dot menu and select **Delete**.
+3. All button and number entities created by the integration will be removed automatically.
