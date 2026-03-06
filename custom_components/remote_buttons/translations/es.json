@@ -10,7 +10,8 @@
       }
     },
     "abort": {
-      "no_remotes": "No se encontraron mandos a distancia con función de aprendizaje."
+      "no_remotes": "No se encontraron mandos a distancia con función de aprendizaje.",
+      "already_configured": "Remote Buttons ya está configurado."
     }
   },
   "options": {

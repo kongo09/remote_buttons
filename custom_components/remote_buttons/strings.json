@@ -10,7 +10,8 @@
       }
     },
     "abort": {
-      "no_remotes": "No remote entities with learn support were found."
+      "no_remotes": "No remote entities with learn support were found.",
+      "already_configured": "Remote Buttons is already configured."
     }
   },
   "options": {
