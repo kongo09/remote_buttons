@@ -5,7 +5,6 @@ from __future__ import annotations
 import contextlib
 
 from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -16,10 +15,10 @@ from .const import DEFAULT_IR_DELAY, DEFAULT_IR_REPEATS, DOMAIN
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up number platform — stores callback for dynamic entity creation."""
-    hass.data[DOMAIN][entry.entry_id]["async_add_number_entities"] = async_add_entities
+    entry.runtime_data.async_add_number_entities = async_add_entities
 
 
 class RemoteCommandNumber(RestoreEntity, NumberEntity):
@@ -36,7 +35,7 @@ class RemoteCommandNumber(RestoreEntity, NumberEntity):
         remote_domain: str,
         subdevice: str,
         param: str,
-        name: str,
+        translation_key: str,
         default: float,
         min_val: float,
         max_val: float,
@@ -50,7 +49,7 @@ class RemoteCommandNumber(RestoreEntity, NumberEntity):
         self._subdevice = subdevice
 
         self._attr_unique_id = f"remote_buttons_{remote_entity_id}_{subdevice}_ir_{param}"
-        self._attr_name = name
+        self._attr_translation_key = translation_key
         self._attr_native_value = default
         self._attr_native_min_value = min_val
         self._attr_native_max_value = max_val
@@ -92,7 +91,7 @@ def create_ir_number_pair(
         remote_domain=remote_domain,
         subdevice=subdevice,
         param="delay_secs",
-        name="IR delay",
+        translation_key="ir_delay",
         default=DEFAULT_IR_DELAY,
         min_val=0.0,
         max_val=10.0,
@@ -105,7 +104,7 @@ def create_ir_number_pair(
         remote_domain=remote_domain,
         subdevice=subdevice,
         param="num_repeats",
-        name="IR repeat",
+        translation_key="ir_repeat",
         default=DEFAULT_IR_REPEATS,
         min_val=1.0,
         max_val=20.0,

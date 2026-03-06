@@ -12,6 +12,7 @@ from homeassistant.helpers import issue_registry as ir
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.remote_buttons import (
+    RemoteButtonsData,
     _async_options_updated,
     _make_entity_registry_listener,
     _make_service_listener,
@@ -53,15 +54,11 @@ def _make_entry(hass: HomeAssistant, watched: list[str]) -> MockConfigEntry:
     """Create and register our integration's config entry."""
     entry = MockConfigEntry(domain=DOMAIN, data={"remote_entities": watched})
     entry.add_to_hass(hass)
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {
-        "known_commands": set(),
-        "ir_subdevices": set(),
-        "ir_numbers": {},
-        "async_add_entities": MagicMock(),
-        "async_add_number_entities": MagicMock(),
-        "scan_unsub": None,
-    }
+    data = RemoteButtonsData(
+        async_add_entities=MagicMock(),
+        async_add_number_entities=MagicMock(),
+    )
+    entry.runtime_data = data
     return entry
 
 
@@ -77,11 +74,11 @@ async def test_scan_creates_buttons(hass: HomeAssistant) -> None:
     ):
         await async_scan_remote_commands(hass, entry)
 
-    add = hass.data[DOMAIN][entry.entry_id]["async_add_entities"]
+    add = entry.runtime_data.async_add_entities
     add.assert_called_once()
     buttons = add.call_args[0][0]
     assert len(buttons) == 2
-    names = {b.name for b in buttons}
+    names = {b.translation_placeholders["command_name"] for b in buttons}
     assert names == {"mute", "power"}
 
 
@@ -91,8 +88,8 @@ async def test_scan_removes_buttons(hass: HomeAssistant) -> None:
     entry = _make_entry(hass, ["remote.living_room"])
 
     # Pretend we already know about two commands.
-    data = hass.data[DOMAIN][entry.entry_id]
-    data["known_commands"] = {
+    data = entry.runtime_data
+    data.known_commands = {
         ("remote.living_room", "TV", "power"),
         ("remote.living_room", "TV", "mute"),
     }
@@ -117,7 +114,7 @@ async def test_scan_removes_buttons(hass: HomeAssistant) -> None:
     ):
         await async_scan_remote_commands(hass, entry)
 
-    assert data["known_commands"] == set()
+    assert data.known_commands == set()
     # Verify entities were removed.
     for cmd in ("power", "mute"):
         uid = f"remote_buttons_remote.living_room_TV_{cmd}"
@@ -129,8 +126,8 @@ async def test_scan_no_change(hass: HomeAssistant) -> None:
     _setup_remote(hass)
     entry = _make_entry(hass, ["remote.living_room"])
 
-    data = hass.data[DOMAIN][entry.entry_id]
-    data["known_commands"] = {("remote.living_room", "TV", "power")}
+    data = entry.runtime_data
+    data.known_commands = {("remote.living_room", "TV", "power")}
 
     with patch(
         "custom_components.remote_buttons.storage.Store.async_load",
@@ -139,9 +136,9 @@ async def test_scan_no_change(hass: HomeAssistant) -> None:
     ):
         await async_scan_remote_commands(hass, entry)
 
-    add = data["async_add_entities"]
+    add = data.async_add_entities
     add.assert_not_called()
-    assert data["known_commands"] == {("remote.living_room", "TV", "power")}
+    assert data.known_commands == {("remote.living_room", "TV", "power")}
 
 
 async def test_scan_skips_unknown_platform(hass: HomeAssistant) -> None:
@@ -151,7 +148,7 @@ async def test_scan_skips_unknown_platform(hass: HomeAssistant) -> None:
 
     await async_scan_remote_commands(hass, entry)
 
-    add = hass.data[DOMAIN][entry.entry_id]["async_add_entities"]
+    add = entry.runtime_data.async_add_entities
     add.assert_not_called()
 
 
@@ -277,8 +274,8 @@ async def test_removed_remote_cleans_up_buttons(hass: HomeAssistant) -> None:
     entry = _make_entry(hass, ["remote.living_room"])
 
     # Simulate known commands and registered button entities.
-    data = hass.data[DOMAIN][entry.entry_id]
-    data["known_commands"] = {
+    data = entry.runtime_data
+    data.known_commands = {
         ("remote.living_room", "TV", "power"),
         ("remote.living_room", "TV", "mute"),
     }
@@ -315,7 +312,7 @@ async def test_removed_remote_cleans_up_buttons(hass: HomeAssistant) -> None:
     assert device_reg.async_get_device(identifiers={(DOMAIN, "remote.living_room_TV")}) is None
 
     # Known commands should be empty.
-    assert data["known_commands"] == set()
+    assert data.known_commands == set()
 
     # Remote should be removed from the watched list.
     assert "remote.living_room" not in entry.data["remote_entities"]
@@ -326,14 +323,14 @@ async def test_removed_unwatched_remote_is_ignored(hass: HomeAssistant) -> None:
     _setup_remote(hass)
     entry = _make_entry(hass, ["remote.living_room"])
 
-    data = hass.data[DOMAIN][entry.entry_id]
-    data["known_commands"] = {("remote.living_room", "TV", "power")}
+    data = entry.runtime_data
+    data.known_commands = {("remote.living_room", "TV", "power")}
 
     listener = _make_entity_registry_listener(hass, entry)
     listener(MagicMock(data={"action": "remove", "entity_id": "remote.bedroom"}))
 
     # Nothing should change.
-    assert data["known_commands"] == {("remote.living_room", "TV", "power")}
+    assert data.known_commands == {("remote.living_room", "TV", "power")}
     assert "remote.living_room" in entry.data["remote_entities"]
 
 
@@ -349,19 +346,19 @@ async def test_scan_creates_numbers_for_ir_subdevice(hass: HomeAssistant) -> Non
     ):
         await async_scan_remote_commands(hass, entry)
 
-    data = hass.data[DOMAIN][entry.entry_id]
-    add_numbers = data["async_add_number_entities"]
+    data = entry.runtime_data
+    add_numbers = data.async_add_number_entities
     add_numbers.assert_called_once()
     numbers = add_numbers.call_args[0][0]
     assert len(numbers) == 2
-    names = {n.name for n in numbers}
-    assert names == {"IR delay", "IR repeat"}
+    keys = {n.translation_key for n in numbers}
+    assert keys == {"ir_delay", "ir_repeat"}
 
     # ir_numbers should have the pair.
-    assert ("remote.living_room", "TV") in data["ir_numbers"]
+    assert ("remote.living_room", "TV") in data.ir_numbers
 
     # ir_subdevices should track it.
-    assert ("remote.living_room", "TV") in data["ir_subdevices"]
+    assert ("remote.living_room", "TV") in data.ir_subdevices
 
 
 async def test_scan_skips_numbers_for_rf_subdevice(hass: HomeAssistant) -> None:
@@ -376,12 +373,12 @@ async def test_scan_skips_numbers_for_rf_subdevice(hass: HomeAssistant) -> None:
     ):
         await async_scan_remote_commands(hass, entry)
 
-    data = hass.data[DOMAIN][entry.entry_id]
-    add_numbers = data["async_add_number_entities"]
+    data = entry.runtime_data
+    add_numbers = data.async_add_number_entities
     add_numbers.assert_not_called()
 
     # Buttons should still be created.
-    add_buttons = data["async_add_entities"]
+    add_buttons = data.async_add_entities
     add_buttons.assert_called_once()
     buttons = add_buttons.call_args[0][0]
     assert len(buttons) == 2
@@ -392,10 +389,10 @@ async def test_scan_removes_numbers_when_no_ir_left(hass: HomeAssistant) -> None
     _setup_remote(hass)
     entry = _make_entry(hass, ["remote.living_room"])
 
-    data = hass.data[DOMAIN][entry.entry_id]
-    data["known_commands"] = {("remote.living_room", "TV", "power")}
-    data["ir_subdevices"] = {("remote.living_room", "TV")}
-    data["ir_numbers"] = {("remote.living_room", "TV"): (MagicMock(), MagicMock())}
+    data = entry.runtime_data
+    data.known_commands = {("remote.living_room", "TV", "power")}
+    data.ir_subdevices = {("remote.living_room", "TV")}
+    data.ir_numbers = {("remote.living_room", "TV"): (MagicMock(), MagicMock())}
 
     # Register number entities in the entity registry so removal works.
     entity_reg = er.async_get(hass)
@@ -423,8 +420,8 @@ async def test_scan_removes_numbers_when_no_ir_left(hass: HomeAssistant) -> None
         assert entity_reg.async_get_entity_id(Platform.NUMBER, DOMAIN, uid) is None
 
     # ir_numbers and ir_subdevices should be cleared.
-    assert ("remote.living_room", "TV") not in data["ir_numbers"]
-    assert ("remote.living_room", "TV") not in data["ir_subdevices"]
+    assert ("remote.living_room", "TV") not in data.ir_numbers
+    assert ("remote.living_room", "TV") not in data.ir_subdevices
 
 
 async def test_removed_remote_cleans_up_numbers(hass: HomeAssistant) -> None:
@@ -432,10 +429,10 @@ async def test_removed_remote_cleans_up_numbers(hass: HomeAssistant) -> None:
     _setup_remote(hass)
     entry = _make_entry(hass, ["remote.living_room"])
 
-    data = hass.data[DOMAIN][entry.entry_id]
-    data["known_commands"] = {("remote.living_room", "TV", "power")}
-    data["ir_subdevices"] = {("remote.living_room", "TV")}
-    data["ir_numbers"] = {("remote.living_room", "TV"): (MagicMock(), MagicMock())}
+    data = entry.runtime_data
+    data.known_commands = {("remote.living_room", "TV", "power")}
+    data.ir_subdevices = {("remote.living_room", "TV")}
+    data.ir_numbers = {("remote.living_room", "TV"): (MagicMock(), MagicMock())}
 
     entity_reg = er.async_get(hass)
     device_reg = dr.async_get(hass)
@@ -473,8 +470,8 @@ async def test_removed_remote_cleans_up_numbers(hass: HomeAssistant) -> None:
         assert entity_reg.async_get_entity_id(Platform.NUMBER, DOMAIN, uid) is None
 
     # ir_numbers and ir_subdevices should be cleared.
-    assert ("remote.living_room", "TV") not in data["ir_numbers"]
-    assert ("remote.living_room", "TV") not in data["ir_subdevices"]
+    assert ("remote.living_room", "TV") not in data.ir_numbers
+    assert ("remote.living_room", "TV") not in data.ir_subdevices
 
 
 async def test_scan_mixed_ir_rf_subdevice(hass: HomeAssistant) -> None:
@@ -489,8 +486,8 @@ async def test_scan_mixed_ir_rf_subdevice(hass: HomeAssistant) -> None:
     ):
         await async_scan_remote_commands(hass, entry)
 
-    data = hass.data[DOMAIN][entry.entry_id]
+    data = entry.runtime_data
     # Should create numbers because there's at least one IR code.
-    add_numbers = data["async_add_number_entities"]
+    add_numbers = data.async_add_number_entities
     add_numbers.assert_called_once()
-    assert ("remote.living_room", "TV") in data["ir_subdevices"]
+    assert ("remote.living_room", "TV") in data.ir_subdevices

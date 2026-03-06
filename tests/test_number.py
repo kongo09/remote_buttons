@@ -70,11 +70,11 @@ def test_number_attributes() -> None:
     assert delay.native_max_value == 10.0
     assert delay.native_step == 0.1
     assert delay.native_unit_of_measurement == UnitOfTime.SECONDS
-    assert delay.name == "IR delay"
+    assert delay.translation_key == "ir_delay"
 
     # Repeats ranges.
     assert repeats.native_min_value == 1.0
     assert repeats.native_max_value == 20.0
     assert repeats.native_step == 1.0
     assert repeats.native_unit_of_measurement is None
-    assert repeats.name == "IR repeat"
+    assert repeats.translation_key == "ir_repeat"
