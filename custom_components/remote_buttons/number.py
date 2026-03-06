@@ -5,7 +5,6 @@ from __future__ import annotations
 import contextlib
 
 from homeassistant.components.number import NumberEntity, NumberMode
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory, UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -16,10 +15,10 @@ from .const import DEFAULT_IR_DELAY, DEFAULT_IR_REPEATS, DOMAIN
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up number platform — stores callback for dynamic entity creation."""
-    hass.data[DOMAIN][entry.entry_id]["async_add_number_entities"] = async_add_entities
+    entry.runtime_data.async_add_number_entities = async_add_entities
 
 
 class RemoteCommandNumber(RestoreEntity, NumberEntity):

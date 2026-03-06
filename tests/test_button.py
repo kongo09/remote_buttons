@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.core import HomeAssistant
 
+from custom_components.remote_buttons import RemoteButtonsData
 from custom_components.remote_buttons.button import RemoteCommandButton
 from custom_components.remote_buttons.const import DOMAIN
 
@@ -81,26 +82,22 @@ async def test_button_press_calls_send_command(hass: HomeAssistant) -> None:
 
 async def test_button_press_uses_ir_numbers(hass: HomeAssistant) -> None:
     """Test pressing the button passes delay/repeats from IR number entities."""
-    entry_id = "test_entry_123"
+    delay_entity = MagicMock(native_value=1.5)
+    repeats_entity = MagicMock(native_value=3.0)
+    data = RemoteButtonsData(
+        ir_numbers={
+            ("remote.living_room", "TV"): (delay_entity, repeats_entity),
+        },
+    )
     button = RemoteCommandButton(
         remote_entity_id="remote.living_room",
         remote_device_id="abc123",
         remote_domain="broadlink",
         subdevice="TV",
         command_name="power",
-        config_entry_id=entry_id,
+        runtime_data=data,
     )
     button.hass = hass
-
-    # Set up IR number entities in hass.data.
-    delay_entity = MagicMock(native_value=1.5)
-    repeats_entity = MagicMock(native_value=3.0)
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry_id] = {
-        "ir_numbers": {
-            ("remote.living_room", "TV"): (delay_entity, repeats_entity),
-        },
-    }
 
     mock_call = AsyncMock()
     with patch(
@@ -131,10 +128,9 @@ async def test_button_press_without_ir_numbers(hass: HomeAssistant) -> None:
         remote_domain="broadlink",
         subdevice="TV",
         command_name="power",
-        config_entry_id="no_such_entry",
+        runtime_data=RemoteButtonsData(),
     )
     button.hass = hass
-    hass.data.setdefault(DOMAIN, {})
 
     mock_call = AsyncMock()
     with patch(

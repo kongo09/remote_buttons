@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -20,10 +19,10 @@ ATTR_NUM_REPEATS = "num_repeats"
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback
 ) -> None:
     """Set up button platform — stores callback for dynamic entity creation."""
-    hass.data[DOMAIN][entry.entry_id]["async_add_entities"] = async_add_entities
+    entry.runtime_data.async_add_entities = async_add_entities
 
 
 class RemoteCommandButton(ButtonEntity):
@@ -38,7 +37,7 @@ class RemoteCommandButton(ButtonEntity):
         remote_domain: str,
         subdevice: str,
         command_name: str,
-        config_entry_id: str | None = None,
+        runtime_data: Any = None,
     ) -> None:
         """Initialise the button."""
         self._remote_entity_id = remote_entity_id
@@ -46,7 +45,7 @@ class RemoteCommandButton(ButtonEntity):
         self._remote_device_id = remote_device_id
         self._subdevice = subdevice
         self._command = command_name
-        self._config_entry_id = config_entry_id
+        self._runtime_data = runtime_data
 
         self._attr_unique_id = f"remote_buttons_{remote_entity_id}_{subdevice}_{command_name}"
         self._attr_translation_key = "remote_command"
@@ -85,7 +84,6 @@ class RemoteCommandButton(ButtonEntity):
 
     def _get_ir_numbers(self) -> tuple | None:
         """Look up the IR number entities for this button's subdevice."""
-        if not self._config_entry_id:
+        if not self._runtime_data:
             return None
-        data = self.hass.data.get(DOMAIN, {}).get(self._config_entry_id, {})
-        return data.get("ir_numbers", {}).get((self._remote_entity_id, self._subdevice))
+        return self._runtime_data.ir_numbers.get((self._remote_entity_id, self._subdevice))

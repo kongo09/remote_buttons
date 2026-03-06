@@ -2,38 +2,47 @@
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_CALL_SERVICE, Platform
-from homeassistant.core import Event, HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, Event, HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_call_later
 
 from .button import RemoteCommandButton
 from .const import DELETE_SCAN_DELAY, DOMAIN, LEARN_SCAN_DELAY
-from .number import create_ir_number_pair
+from .number import RemoteCommandNumber, create_ir_number_pair
 from .storage import READERS
 
 _LOGGER = logging.getLogger(__name__)
 
-type RemoteButtonsConfigEntry = ConfigEntry
+
+@dataclasses.dataclass
+class RemoteButtonsData:
+    """Runtime data for a Remote Buttons config entry."""
+
+    known_commands: set[tuple[str, str, str]] = dataclasses.field(default_factory=set)
+    ir_subdevices: set[tuple[str, str]] = dataclasses.field(default_factory=set)
+    ir_numbers: dict[tuple[str, str], tuple[RemoteCommandNumber, RemoteCommandNumber]] = (
+        dataclasses.field(default_factory=dict)
+    )
+    async_add_entities: AddEntitiesCallback | None = None
+    async_add_number_entities: AddEntitiesCallback | None = None
+    scan_unsub: CALLBACK_TYPE | None = None
+
+
+type RemoteButtonsConfigEntry = ConfigEntry[RemoteButtonsData]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: RemoteButtonsConfigEntry) -> bool:
     """Set up Remote Buttons from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {
-        "known_commands": set(),
-        "ir_subdevices": set(),
-        "ir_numbers": {},
-        "async_add_entities": None,
-        "async_add_number_entities": None,
-        "scan_unsub": None,
-    }
+    entry.runtime_data = RemoteButtonsData()
 
     # Forward to button and number platforms (stores async_add_entities callbacks).
     await hass.config_entries.async_forward_entry_setups(entry, [Platform.BUTTON, Platform.NUMBER])
@@ -65,11 +74,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: RemoteButtonsConfigEntr
     unload_ok = await hass.config_entries.async_unload_platforms(
         entry, [Platform.BUTTON, Platform.NUMBER]
     )
-    if unload_ok:
-        data = hass.data[DOMAIN].pop(entry.entry_id, {})
-        cancel = data.get("scan_unsub")
-        if cancel is not None:
-            cancel()
+    if unload_ok and entry.runtime_data.scan_unsub is not None:
+        entry.runtime_data.scan_unsub()
     return unload_ok
 
 
@@ -118,16 +124,15 @@ def _make_service_listener(hass: HomeAssistant, entry: RemoteButtonsConfigEntry)
 @callback
 def _schedule_scan(hass: HomeAssistant, entry: RemoteButtonsConfigEntry, delay: float) -> None:
     """Cancel any pending scan and schedule a new one after *delay* seconds."""
-    data = hass.data[DOMAIN].get(entry.entry_id, {})
-    cancel = data.get("scan_unsub")
-    if cancel is not None:
-        cancel()
+    data = entry.runtime_data
+    if data.scan_unsub is not None:
+        data.scan_unsub()
 
     @callback
     def _run_scan(_now) -> None:
         hass.async_create_task(async_scan_remote_commands(hass, entry))
 
-    data["scan_unsub"] = async_call_later(hass, delay, _run_scan)
+    data.scan_unsub = async_call_later(hass, delay, _run_scan)
 
 
 @callback
@@ -187,8 +192,8 @@ def _handle_removed_remote(
 
     _LOGGER.info("Watched remote removed: %s — cleaning up", entity_id)
 
-    data = hass.data[DOMAIN].get(entry.entry_id, {})
-    known: set[tuple[str, str, str]] = data.get("known_commands", set())
+    data = entry.runtime_data
+    known = data.known_commands
 
     # Find all commands belonging to this remote.
     to_remove = {(r, s, c) for r, s, c in known if r == entity_id}
@@ -204,8 +209,8 @@ def _handle_removed_remote(
             entity_reg.async_remove(ent_id)
 
     # Remove IR number entities for affected subdevices.
-    ir_numbers: dict = data.get("ir_numbers", {})
-    ir_subdevices: set = data.get("ir_subdevices", set())
+    ir_numbers = data.ir_numbers
+    ir_subdevices = data.ir_subdevices
     for subdevice in subdevices:
         _remove_ir_numbers(entity_reg, entity_id, subdevice, ir_numbers, ir_subdevices)
 
@@ -221,7 +226,7 @@ def _handle_removed_remote(
                 device_reg.async_remove_device(device_entry.id)
 
     # Update known commands.
-    data["known_commands"] = known - to_remove
+    data.known_commands = known - to_remove
 
     # Remove this remote from the watched list.
     watched.remove(entity_id)
@@ -272,12 +277,12 @@ def _get_remote_info(hass: HomeAssistant, remote_entity_id: str) -> tuple[str, s
 
 async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsConfigEntry) -> None:
     """Scan storage for all watched remotes and add/remove button entities."""
-    data = hass.data[DOMAIN][entry.entry_id]
-    known: set[tuple[str, str, str]] = data["known_commands"]
-    add_entities = data.get("async_add_entities")
-    add_number_entities = data.get("async_add_number_entities")
-    ir_numbers: dict = data.setdefault("ir_numbers", {})
-    ir_subdevices: set = data.setdefault("ir_subdevices", set())
+    data = entry.runtime_data
+    known = data.known_commands
+    add_entities = data.async_add_entities
+    add_number_entities = data.async_add_number_entities
+    ir_numbers = data.ir_numbers
+    ir_subdevices = data.ir_subdevices
 
     entity_reg = er.async_get(hass)
     watched = entry.data.get("remote_entities", [])
@@ -316,7 +321,7 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
                     remote_domain=platform,
                     subdevice=subdevice,
                     command_name=cmd_name,
-                    config_entry_id=entry.entry_id,
+                    runtime_data=data,
                 )
             )
         add_entities(new_buttons)
@@ -350,8 +355,8 @@ async def async_scan_remote_commands(hass: HomeAssistant, entry: RemoteButtonsCo
     for remote_entity_id, subdevice in removed_ir:
         _remove_ir_numbers(entity_reg, remote_entity_id, subdevice, ir_numbers, ir_subdevices)
 
-    data["known_commands"] = current
-    data["ir_subdevices"] = current_ir_subdevices
+    data.known_commands = current
+    data.ir_subdevices = current_ir_subdevices
 
     _LOGGER.debug(
         "Scan complete: %d current, %d added, %d removed",
