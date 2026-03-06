@@ -40,12 +40,12 @@
   },
   "issues": {
     "new_remote_found": {
-      "title": "New remote found: {entity_id}",
+      "title": "New remote found: {name}",
       "fix_flow": {
         "step": {
           "init": {
-            "title": "Add remote: {entity_id}",
-            "description": "Do you want to add **{entity_id}** to the list of watched remotes?"
+            "title": "Add remote: {name}",
+            "description": "Do you want to add **{name}** to the list of watched remotes?"
           }
         }
       }

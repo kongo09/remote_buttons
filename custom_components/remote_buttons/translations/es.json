@@ -40,12 +40,12 @@
   },
   "issues": {
     "new_remote_found": {
-      "title": "Nuevo mando detectado: {entity_id}",
+      "title": "Nuevo mando detectado: {name}",
       "fix_flow": {
         "step": {
           "init": {
-            "title": "Añadir mando: {entity_id}",
-            "description": "¿Deseas añadir **{entity_id}** a la lista de mandos supervisados?"
+            "title": "Añadir mando: {name}",
+            "description": "¿Deseas añadir **{name}** a la lista de mandos supervisados?"
           }
         }
       }
