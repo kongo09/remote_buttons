@@ -1,6 +1,6 @@
 {
   "domain": "remote_buttons",
-  "name": "Remote buttons",
+  "name": "Remote Buttons",
   "after_dependencies": ["broadlink", "tuya_local"],
   "codeowners": ["@kongo09"],
   "config_flow": true,
