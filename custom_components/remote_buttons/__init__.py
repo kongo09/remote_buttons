@@ -322,7 +322,7 @@ async def _async_scan_remote_commands_locked(
     for remote_entity_id in scan_targets:
         info = _get_remote_info(hass, remote_entity_id)
         if not info:
-            _LOGGER.debug("Skipping %s: not found or unsupported platform", remote_entity_id)
+            _LOGGER.warning("Skipping %s: not found or unsupported platform", remote_entity_id)
             continue
 
         platform, dev_id_str = info
