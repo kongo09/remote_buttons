@@ -1,6 +1,6 @@
 [project]
 name = "remote-buttons"
-version = "1.0.2"
+version = "1.1.0"
 description = "Home Assistant custom integration: auto-create button entities for learnt remote commands"
 license = "MIT"
 requires-python = ">=3.13"
