@@ -41,7 +41,14 @@
   "issues": {
     "new_remote_found": {
       "title": "Nuevo mando detectado: {entity_id}",
-      "description": "Se ha detectado un nuevo mando compatible **{entity_id}**. Puedes añadirlo a Remote Buttons a través de las opciones de configuración de la integración."
+      "fix_flow": {
+        "step": {
+          "init": {
+            "title": "Añadir mando: {entity_id}",
+            "description": "¿Deseas añadir **{entity_id}** a la lista de mandos supervisados?"
+          }
+        }
+      }
     }
   }
 }

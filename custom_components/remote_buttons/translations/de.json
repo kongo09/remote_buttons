@@ -41,7 +41,14 @@
   "issues": {
     "new_remote_found": {
       "title": "Neue Fernbedienung gefunden: {entity_id}",
-      "description": "Eine neue kompatible Fernbedienung **{entity_id}** wurde erkannt. Du kannst sie über die Konfigurationsoptionen der Integration zu Remote Buttons hinzufügen."
+      "fix_flow": {
+        "step": {
+          "init": {
+            "title": "Fernbedienung hinzufügen: {entity_id}",
+            "description": "Möchtest du **{entity_id}** zur Liste der überwachten Fernbedienungen hinzufügen?"
+          }
+        }
+      }
     }
   }
 }
