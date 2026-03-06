@@ -57,5 +57,10 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "send_command_failed": {
+      "message": "No se pudo enviar el comando \"{command}\" a través de {remote}."
+    }
   }
 }
