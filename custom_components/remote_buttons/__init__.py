@@ -205,41 +205,7 @@ def _handle_removed_remote(
 
     _LOGGER.info("Watched remote removed: %s — cleaning up", entity_id)
 
-    data = entry.runtime_data
-    known = data.known_commands
-
-    # Find all commands belonging to this remote.
-    to_remove = {(r, s, c) for r, s, c in known if r == entity_id}
-
-    # Remove button entities and collect affected subdevices.
-    entity_reg = er.async_get(hass)
-    subdevices: set[str] = set()
-    for _remote, subdevice, cmd_name in to_remove:
-        subdevices.add(subdevice)
-        uid = f"remote_buttons_{entity_id}_{subdevice}_{cmd_name}"
-        ent_id = entity_reg.async_get_entity_id(Platform.BUTTON, DOMAIN, uid)
-        if ent_id:
-            entity_reg.async_remove(ent_id)
-
-    # Remove IR number entities for affected subdevices.
-    ir_numbers = data.ir_numbers
-    ir_subdevices = data.ir_subdevices
-    for subdevice in subdevices:
-        _remove_ir_numbers(entity_reg, entity_id, subdevice, ir_numbers, ir_subdevices)
-
-    # Remove subdevice device entries that have no remaining entities.
-    device_reg = dr.async_get(hass)
-    for subdevice in subdevices:
-        dev_identifier = (DOMAIN, f"{entity_id}_{subdevice}")
-        device_entry = device_reg.async_get_device(identifiers={dev_identifier})
-        if device_entry:
-            # Check if any entities still reference this device.
-            remaining = er.async_entries_for_device(entity_reg, device_entry.id)
-            if not remaining:
-                device_reg.async_remove_device(device_entry.id)
-
-    # Update known commands.
-    data.known_commands = known - to_remove
+    _cleanup_remote_entities(hass, entry, entity_id)
 
     # Remove this remote from the watched list.
     watched.remove(entity_id)

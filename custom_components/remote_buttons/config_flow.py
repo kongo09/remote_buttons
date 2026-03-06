@@ -32,7 +32,7 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             return self.async_create_entry(
-                title="Remote buttons",
+                title="Remote Buttons",
                 data={CONF_REMOTE_ENTITIES: user_input[CONF_REMOTE_ENTITIES]},
             )
 
