@@ -90,7 +90,7 @@ Any remote integration that stores learnt commands using HA's `helpers.storage.S
 Additional features:
 
 - **Auto-discovery** — when a new compatible remote entity is added to HA, a repair issue is created prompting you to add it to the watch list.
-- **Automatic updates** — learning or deleting commands triggers a re-scan (30 s delay for learn, 2 s for delete). New buttons appear and deleted buttons are removed automatically.
+- **Automatic updates** — learning or deleting commands triggers a re-scan after 30 seconds. New buttons appear and deleted buttons are removed automatically.
 - **Sub-device grouping** — commands are grouped into HA devices by their sub-device name (e.g., "TV", "AC").
 - **Diagnostics** — download diagnostics from the integration page for troubleshooting.
 
@@ -100,7 +100,7 @@ This integration is **event-driven** and does not poll. Data is refreshed when:
 
 - The integration is loaded or reloaded (full scan of all watched remotes).
 - A `remote.learn_command` service call is detected for a watched remote (re-scan after 30 seconds).
-- A `remote.delete_command` service call is detected for a watched remote (re-scan after 2 seconds).
+- A `remote.delete_command` service call is detected for a watched remote (re-scan after 30 seconds).
 - The watched remote list is changed via the options flow (immediate re-scan).
 
 ## Use cases
@@ -129,7 +129,7 @@ automation:
 - **Supported platforms only** — only Broadlink and Tuya Local remotes are supported. Other remote integrations (e.g., Zigbee, Z-Wave) cannot be used.
 - **No RF-specific parameters** — IR delay and IR repeat settings only apply to IR sub-devices. RF commands are sent without delay or repeat options.
 - **Commands must be learnt first** — this integration only creates buttons for commands that already exist in storage. Use the HA developer tools or the remote integration's own UI to learn new commands.
-- **Scan delay** — after learning a new command, it takes up to 30 seconds before the corresponding button entity appears.
+- **Scan delay** — after learning or deleting a command, it takes up to 30 seconds before button entities are added or removed.
 - **No direct hardware access** — all commands are sent via `remote.send_command`. If the underlying remote integration is unavailable, button presses will fail.
 
 ## Troubleshooting
@@ -140,7 +140,7 @@ automation:
 | Buttons not appearing after learning | Wait 30 seconds — the integration re-scans after a delay. If buttons still don't appear, try reloading the integration. |
 | Button press does nothing | Check that the underlying remote entity is online and reachable. Review the Home Assistant logs for errors. |
 | Repair issue for a new remote | A compatible remote was detected. Open the repair and confirm to add it to the watch list, or dismiss it. |
-| Stale buttons after deleting commands | The integration re-scans 2 seconds after `remote.delete_command`. If buttons persist, reload the integration. |
+| Stale buttons after deleting commands | The integration re-scans 30 seconds after `remote.delete_command`. If buttons persist, reload the integration. |
 
 ## Removal
 
