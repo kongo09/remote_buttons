@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import dataclasses
 import logging
 from typing import Any
@@ -35,6 +36,7 @@ class RemoteButtonsData:
     async_add_entities: AddEntitiesCallback | None = None
     async_add_number_entities: AddEntitiesCallback | None = None
     scan_unsub: CALLBACK_TYPE | None = None
+    scan_lock: asyncio.Lock = dataclasses.field(default_factory=asyncio.Lock)
 
 
 type RemoteButtonsConfigEntry = ConfigEntry[RemoteButtonsData]
@@ -292,6 +294,16 @@ async def async_scan_remote_commands(
     If *remote_entity_ids* is given, only those remotes are scanned and
     reconciled; the rest of the known state is kept intact.
     """
+    async with entry.runtime_data.scan_lock:
+        await _async_scan_remote_commands_locked(hass, entry, remote_entity_ids)
+
+
+async def _async_scan_remote_commands_locked(
+    hass: HomeAssistant,
+    entry: RemoteButtonsConfigEntry,
+    remote_entity_ids: list[str] | None = None,
+) -> None:
+    """Inner scan logic, must be called under scan_lock."""
     data = entry.runtime_data
     known = data.known_commands
     add_entities = data.async_add_entities
