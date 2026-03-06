@@ -41,7 +41,14 @@
   "issues": {
     "new_remote_found": {
       "title": "Nouvelle télécommande détectée : {entity_id}",
-      "description": "Une nouvelle télécommande compatible **{entity_id}** a été détectée. Vous pouvez l'ajouter à Remote Buttons via les options de configuration de l'intégration."
+      "fix_flow": {
+        "step": {
+          "init": {
+            "title": "Ajouter la télécommande : {entity_id}",
+            "description": "Voulez-vous ajouter **{entity_id}** à la liste des télécommandes surveillées ?"
+          }
+        }
+      }
     }
   }
 }

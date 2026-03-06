@@ -183,10 +183,11 @@ def _handle_new_remote(
         hass,
         DOMAIN,
         f"new_remote_{entity_id}",
-        is_fixable=False,
+        is_fixable=True,
         severity=ir.IssueSeverity.WARNING,
         translation_key="new_remote_found",
         translation_placeholders={"entity_id": entity_id},
+        data={"entity_id": entity_id},
     )
 
 
