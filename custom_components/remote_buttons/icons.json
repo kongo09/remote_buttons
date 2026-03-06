@@ -1,0 +1,17 @@
+{
+  "entity": {
+    "button": {
+      "remote_command": {
+        "default": "mdi:remote"
+      }
+    },
+    "number": {
+      "ir_delay": {
+        "default": "mdi:timer-sand"
+      },
+      "ir_repeat": {
+        "default": "mdi:repeat"
+      }
+    }
+  }
+}
