@@ -76,7 +76,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: RemoteButtonsConfigEntr
 @callback
 def _make_service_listener(hass: HomeAssistant, entry: RemoteButtonsConfigEntry):
     """Return an event listener that triggers a delayed re-scan on learn/delete."""
-    watched = set(entry.data.get("remote_entities", []))
 
     @callback
     def _listener(event: Event) -> None:
@@ -94,11 +93,14 @@ def _make_service_listener(hass: HomeAssistant, entry: RemoteButtonsConfigEntry)
         else:
             return
 
-        # Check whether the targeted entity is one we watch.
+        # Check whether any targeted entity is one we watch.
+        watched = set(entry.data.get("remote_entities", []))
         call_data = service_data.get("service_data", {})
         entity_id = call_data.get("entity_id")
         if isinstance(entity_id, list):
-            entity_id = entity_id[0] if entity_id else None
+            if not watched.intersection(entity_id):
+                return
+            entity_id = next(e for e in entity_id if e in watched)
         if entity_id not in watched:
             return
 
@@ -230,10 +232,18 @@ def _handle_removed_remote(
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: RemoteButtonsConfigEntry) -> None:
-    """Dismiss repair issues for remotes that are now watched."""
+    """Apply updated options: sync into entry.data, dismiss repairs, and rescan."""
+    new_remotes = entry.options.get("remote_entities")
+    if new_remotes is not None:
+        hass.config_entries.async_update_entry(
+            entry, data={**entry.data, "remote_entities": new_remotes}
+        )
+
     watched = set(entry.data.get("remote_entities", []))
     for entity_id in watched:
         ir.async_delete_issue(hass, DOMAIN, f"new_remote_{entity_id}")
+
+    await async_scan_remote_commands(hass, entry)
 
 
 def _get_remote_info(hass: HomeAssistant, remote_entity_id: str) -> tuple[str, str] | None:

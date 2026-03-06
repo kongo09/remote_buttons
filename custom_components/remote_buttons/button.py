@@ -49,7 +49,7 @@ class RemoteCommandButton(ButtonEntity):
         self._config_entry_id = config_entry_id
 
         self._attr_unique_id = f"remote_buttons_{remote_entity_id}_{subdevice}_{command_name}"
-        self._attr_name = f"{subdevice} {command_name}" if subdevice else command_name
+        self._attr_name = command_name
 
     @property
     def device_info(self) -> DeviceInfo:
