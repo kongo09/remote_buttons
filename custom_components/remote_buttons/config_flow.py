@@ -28,6 +28,8 @@ class RemoteButtonsConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step: select remote entities to watch."""
+        self._async_abort_entries_match()
+
         if user_input is not None:
             return self.async_create_entry(
                 title="Remote buttons",

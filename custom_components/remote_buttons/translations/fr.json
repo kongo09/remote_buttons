@@ -10,7 +10,8 @@
       }
     },
     "abort": {
-      "no_remotes": "Aucune télécommande avec fonction d'apprentissage n'a été trouvée."
+      "no_remotes": "Aucune télécommande avec fonction d'apprentissage n'a été trouvée.",
+      "already_configured": "Remote Buttons est déjà configuré."
     }
   },
   "options": {

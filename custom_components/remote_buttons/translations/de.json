@@ -10,7 +10,8 @@
       }
     },
     "abort": {
-      "no_remotes": "Es wurden keine Fernbedienungen mit Lernfunktion gefunden."
+      "no_remotes": "Es wurden keine Fernbedienungen mit Lernfunktion gefunden.",
+      "already_configured": "Remote Buttons ist bereits konfiguriert."
     }
   },
   "options": {

@@ -44,6 +44,17 @@ async def test_flow_creates_entry(hass: HomeAssistant, enable_custom_integration
     assert result["data"] == {"remote_entities": ["remote.living_room"]}
 
 
+async def test_flow_aborts_if_already_configured(
+    hass: HomeAssistant, enable_custom_integrations: None
+) -> None:
+    """Test that the flow aborts when an entry already exists."""
+    make_entry(hass, ["remote.living_room"])
+
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
+    assert result["type"] is FlowResultType.ABORT
+    assert result["reason"] == "already_configured"
+
+
 async def test_flow_filters_unsupported_platforms(
     hass: HomeAssistant, enable_custom_integrations: None
 ) -> None:
