@@ -251,6 +251,8 @@ def _handle_removed_remote(
 
 async def _async_options_updated(hass: HomeAssistant, entry: RemoteButtonsConfigEntry) -> None:
     """Apply updated options: sync into entry.data, dismiss repairs, and rescan."""
+    old_remotes = set(entry.data.get("remote_entities", []))
+
     new_remotes = entry.options.get("remote_entities")
     if new_remotes is not None:
         hass.config_entries.async_update_entry(
@@ -260,6 +262,11 @@ async def _async_options_updated(hass: HomeAssistant, entry: RemoteButtonsConfig
     watched = set(entry.data.get("remote_entities", []))
     for entity_id in watched:
         ir.async_delete_issue(hass, DOMAIN, f"new_remote_{entity_id}")
+
+    # Clean up entities for remotes that were removed from the watched list.
+    removed_remotes = old_remotes - watched
+    for entity_id in removed_remotes:
+        _cleanup_remote_entities(hass, entry, entity_id)
 
     await async_scan_remote_commands(hass, entry)
 
@@ -403,6 +410,42 @@ async def _async_scan_remote_commands_locked(
         len(added),
         len(removed),
     )
+
+
+@callback
+def _cleanup_remote_entities(
+    hass: HomeAssistant, entry: RemoteButtonsConfigEntry, entity_id: str
+) -> None:
+    """Remove all button/number entities and devices for a deselected remote."""
+    data = entry.runtime_data
+    known = data.known_commands
+
+    to_remove = {(r, s, c) for r, s, c in known if r == entity_id}
+
+    entity_reg = er.async_get(hass)
+    subdevices: set[str] = set()
+    for _remote, subdevice, cmd_name in to_remove:
+        subdevices.add(subdevice)
+        uid = f"remote_buttons_{entity_id}_{subdevice}_{cmd_name}"
+        ent_id = entity_reg.async_get_entity_id(Platform.BUTTON, DOMAIN, uid)
+        if ent_id:
+            entity_reg.async_remove(ent_id)
+
+    ir_numbers = data.ir_numbers
+    ir_subdevices = data.ir_subdevices
+    for subdevice in subdevices:
+        _remove_ir_numbers(entity_reg, entity_id, subdevice, ir_numbers, ir_subdevices)
+
+    device_reg = dr.async_get(hass)
+    for subdevice in subdevices:
+        dev_identifier = (DOMAIN, f"{entity_id}_{subdevice}")
+        device_entry = device_reg.async_get_device(identifiers={dev_identifier})
+        if device_entry:
+            remaining = er.async_entries_for_device(entity_reg, device_entry.id)
+            if not remaining:
+                device_reg.async_remove_device(device_entry.id)
+
+    data.known_commands = known - to_remove
 
 
 def _has_ir_codes(commands: dict[str, Any]) -> bool:

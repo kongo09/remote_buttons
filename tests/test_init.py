@@ -228,6 +228,61 @@ async def test_options_update_dismisses_issue(hass: HomeAssistant) -> None:
     assert ir.async_get(hass).async_get_issue(DOMAIN, "new_remote_remote.bedroom") is None
 
 
+async def test_options_update_cleans_up_deselected_remote(hass: HomeAssistant) -> None:
+    """Deselecting a remote via options → its entities and devices are removed."""
+    setup_remote(hass)
+    entry = make_entry(hass, ["remote.living_room"])
+
+    data = entry.runtime_data
+    data.known_commands = {
+        ("remote.living_room", "TV", "power"),
+        ("remote.living_room", "TV", "mute"),
+    }
+
+    entity_reg = er.async_get(hass)
+    device_reg = dr.async_get(hass)
+
+    # Create the subdevice device entry.
+    subdevice_dev = device_reg.async_get_or_create(
+        config_entry_id=entry.entry_id,
+        identifiers={(DOMAIN, "remote.living_room_TV")},
+        name="TV",
+    )
+
+    # Create button entities linked to that device.
+    for cmd in ("power", "mute"):
+        entity_reg.async_get_or_create(
+            Platform.BUTTON,
+            DOMAIN,
+            f"remote_buttons_remote.living_room_TV_{cmd}",
+            config_entry=entry,
+            device_id=subdevice_dev.id,
+        )
+
+    # Simulate options update that removes remote.living_room.
+    hass.config_entries.async_update_entry(
+        entry,
+        options={"remote_entities": []},
+    )
+    with patch(
+        "custom_components.remote_buttons.storage.Store.async_load",
+        new_callable=AsyncMock,
+        return_value={},
+    ):
+        await _async_options_updated(hass, entry)
+
+    # Button entities should be removed.
+    for cmd in ("power", "mute"):
+        uid = f"remote_buttons_remote.living_room_TV_{cmd}"
+        assert entity_reg.async_get_entity_id(Platform.BUTTON, DOMAIN, uid) is None
+
+    # Subdevice device should be removed.
+    assert device_reg.async_get_device(identifiers={(DOMAIN, "remote.living_room_TV")}) is None
+
+    # Known commands should be empty.
+    assert data.known_commands == set()
+
+
 async def test_removed_remote_cleans_up_buttons(hass: HomeAssistant) -> None:
     """Watched remote removed → button entities and devices are cleaned up."""
     setup_remote(hass)
