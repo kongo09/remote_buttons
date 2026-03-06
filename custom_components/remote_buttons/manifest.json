@@ -1,7 +1,7 @@
 {
   "domain": "remote_buttons",
   "name": "Remote buttons",
-  "after_dependencies": ["broadlink"],
+  "after_dependencies": ["broadlink", "tuya_local"],
   "codeowners": ["@kongo09"],
   "config_flow": true,
   "documentation": "https://github.com/kongo09/remote_buttons",
