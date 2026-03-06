@@ -23,6 +23,21 @@
       }
     }
   },
+  "entity": {
+    "button": {
+      "remote_command": {
+        "name": "{command_name}"
+      }
+    },
+    "number": {
+      "ir_delay": {
+        "name": "IR-Verzögerung"
+      },
+      "ir_repeat": {
+        "name": "IR-Wiederholung"
+      }
+    }
+  },
   "issues": {
     "new_remote_found": {
       "title": "Neue Fernbedienung gefunden: {entity_id}",

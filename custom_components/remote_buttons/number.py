@@ -36,7 +36,7 @@ class RemoteCommandNumber(RestoreEntity, NumberEntity):
         remote_domain: str,
         subdevice: str,
         param: str,
-        name: str,
+        translation_key: str,
         default: float,
         min_val: float,
         max_val: float,
@@ -50,7 +50,7 @@ class RemoteCommandNumber(RestoreEntity, NumberEntity):
         self._subdevice = subdevice
 
         self._attr_unique_id = f"remote_buttons_{remote_entity_id}_{subdevice}_ir_{param}"
-        self._attr_name = name
+        self._attr_translation_key = translation_key
         self._attr_native_value = default
         self._attr_native_min_value = min_val
         self._attr_native_max_value = max_val
@@ -92,7 +92,7 @@ def create_ir_number_pair(
         remote_domain=remote_domain,
         subdevice=subdevice,
         param="delay_secs",
-        name="IR delay",
+        translation_key="ir_delay",
         default=DEFAULT_IR_DELAY,
         min_val=0.0,
         max_val=10.0,
@@ -105,7 +105,7 @@ def create_ir_number_pair(
         remote_domain=remote_domain,
         subdevice=subdevice,
         param="num_repeats",
-        name="IR repeat",
+        translation_key="ir_repeat",
         default=DEFAULT_IR_REPEATS,
         min_val=1.0,
         max_val=20.0,

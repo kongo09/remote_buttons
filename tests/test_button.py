@@ -22,8 +22,8 @@ def test_button_unique_id() -> None:
     assert button.unique_id == "remote_buttons_remote.living_room_TV_power"
 
 
-def test_button_name_with_subdevice() -> None:
-    """Test button name is just the command (device provides subdevice prefix)."""
+def test_button_translation_key() -> None:
+    """Test button uses translation_key with command_name placeholder."""
     button = RemoteCommandButton(
         remote_entity_id="remote.living_room",
         remote_device_id="abc123",
@@ -31,19 +31,8 @@ def test_button_name_with_subdevice() -> None:
         subdevice="TV",
         command_name="power",
     )
-    assert button.name == "power"
-
-
-def test_button_name_without_subdevice() -> None:
-    """Test button name without subdevice."""
-    button = RemoteCommandButton(
-        remote_entity_id="remote.living_room",
-        remote_device_id="abc123",
-        remote_domain="broadlink",
-        subdevice="",
-        command_name="power",
-    )
-    assert button.name == "power"
+    assert button.translation_key == "remote_command"
+    assert button.translation_placeholders == {"command_name": "power"}
 
 
 def test_button_device_info() -> None:

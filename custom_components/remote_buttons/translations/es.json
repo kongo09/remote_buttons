@@ -23,6 +23,21 @@
       }
     }
   },
+  "entity": {
+    "button": {
+      "remote_command": {
+        "name": "{command_name}"
+      }
+    },
+    "number": {
+      "ir_delay": {
+        "name": "Retardo IR"
+      },
+      "ir_repeat": {
+        "name": "Repetición IR"
+      }
+    }
+  },
   "issues": {
     "new_remote_found": {
       "title": "Nuevo mando detectado: {entity_id}",

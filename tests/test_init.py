@@ -81,7 +81,7 @@ async def test_scan_creates_buttons(hass: HomeAssistant) -> None:
     add.assert_called_once()
     buttons = add.call_args[0][0]
     assert len(buttons) == 2
-    names = {b.name for b in buttons}
+    names = {b.translation_placeholders["command_name"] for b in buttons}
     assert names == {"mute", "power"}
 
 
@@ -354,8 +354,8 @@ async def test_scan_creates_numbers_for_ir_subdevice(hass: HomeAssistant) -> Non
     add_numbers.assert_called_once()
     numbers = add_numbers.call_args[0][0]
     assert len(numbers) == 2
-    names = {n.name for n in numbers}
-    assert names == {"IR delay", "IR repeat"}
+    keys = {n.translation_key for n in numbers}
+    assert keys == {"ir_delay", "ir_repeat"}
 
     # ir_numbers should have the pair.
     assert ("remote.living_room", "TV") in data["ir_numbers"]

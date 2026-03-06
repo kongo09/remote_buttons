@@ -23,6 +23,21 @@
       }
     }
   },
+  "entity": {
+    "button": {
+      "remote_command": {
+        "name": "{command_name}"
+      }
+    },
+    "number": {
+      "ir_delay": {
+        "name": "Délai IR"
+      },
+      "ir_repeat": {
+        "name": "Répétition IR"
+      }
+    }
+  },
   "issues": {
     "new_remote_found": {
       "title": "Nouvelle télécommande détectée : {entity_id}",
