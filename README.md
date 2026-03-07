@@ -16,9 +16,11 @@ Works with any remote integration that stores learnt commands using HA's `helper
 
 ## Screenshots
 
-| Integration overview | Device controls |
-|---|---|
-| ![Integration overview](images/main_screen.png) | ![Device controls](images/controls.png) |
+![Integration overview](images/main_screen.png)
+
+![Device controls](images/controls.png)
+
+![Device link](images/device_link.png)
 
 ## Coffee
 
